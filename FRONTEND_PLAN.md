@@ -1,8 +1,7 @@
 # Lumora Treks — Frontend Plan (Next.js)
 
-The public travel-agency website. It has **two data sources**:
-1. **Strapi CMS** → editorial pages assembled from **blocks** (rendered by `<BlockRenderer>`).
-2. **Company SDK (Travories)** → **package data** (listings, detail pages, pricing).
+The public travel-agency website. It has **one data source**:
+1. **Wagtail CMS** → editorial pages assembled from **blocks** (rendered by `<BlockRenderer>`).
 
 ← Back to [`PLAN.md`](./PLAN.md) · Backend: [`BACKEND_PLAN.md`](./BACKEND_PLAN.md)
 
@@ -15,7 +14,6 @@ The public travel-agency website. It has **two data sources**:
 | Framework | **Next.js (App Router) + TypeScript** |
 | Styling | **Tailwind CSS** |
 | CMS data | Native `fetch` (server components) |
-| Package data | **Company SDK (Travories)** as an npm dependency |
 | Images | `next/image` |
 | Lint/format | ESLint + Prettier |
 
@@ -27,19 +25,13 @@ The public travel-agency website. It has **two data sources**:
    ```bash
    npx create-next-app@latest frontend --typescript --tailwind --eslint --app
    ```
-2. **Install the SDK** (name TBD — confirm)
-   ```bash
-   npm install @travories/sdk   # placeholder — replace with real package
+2. **Env** — `frontend/.env.local`
    ```
-3. **Env** — `frontend/.env.local`
+   NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+   WAGTAIL_API_TOKEN=<read-only token>
    ```
-   NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
-   STRAPI_API_TOKEN=<read-only token>
-   TRAVORIES_API_KEY=<sdk key>
-   TRAVORIES_BASE_URL=<sdk base url, if needed>
-   ```
-4. **Allow remote images** (Strapi + SDK image hosts) in `next.config.js`.
-5. **Run:** `npm run dev` → http://localhost:3000
+3. **Allow remote images** (Wagtail image hosts) in `next.config.js`.
+4. **Run:** `npm run dev` → http://localhost:3000
 
 ---
 
@@ -52,13 +44,10 @@ frontend/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx                 # home (CMS page, by slug "home")
 │   │   ├── [slug]/page.tsx          # any CMS page (about, landing, …)
-│   │   ├── packages/
-│   │   │   ├── page.tsx             # package listing (SDK)
-│   │   │   └── [id]/page.tsx        # package detail (SDK)
 │   ├── blocks/                      # one React component per CMS block
 │   │   ├── Hero.tsx
 │   │   ├── HeaderCard.tsx
-│   │   ├── PackageGrid.tsx          # reads SDK for referenced packages
+│   │   ├── PackageGrid.tsx          # package grid block
 │   │   ├── Testimonials.tsx
 │   │   ├── Gallery.tsx
 │   │   ├── FAQ.tsx
@@ -66,8 +55,7 @@ frontend/
 │   │   └── ...
 │   ├── components/                  # shared UI (Navbar, Footer, PackageCard)
 │   ├── lib/
-│   │   ├── strapi.ts                # CMS API client
-│   │   ├── sdk.ts                   # Travories SDK init + wrappers
+│   │   ├── wagtail.ts               # CMS API client
 │   │   ├── block-registry.ts        # maps block __component → React block
 │   │   └── types.ts
 │   └── styles/
@@ -78,7 +66,7 @@ frontend/
 
 ## 4. The Block Renderer (core of the CMS side)
 
-Strapi returns a page as an ordered array of blocks, each tagged with `__component` (e.g. `"blocks.hero"`). The renderer maps that string to a React component.
+Wagtail returns a page as an ordered array of blocks, each tagged with `__component` (e.g. `"blocks.hero"`). The renderer maps that string to a React component.
 
 `src/lib/block-registry.ts`:
 ```ts
@@ -93,7 +81,7 @@ export const blockRegistry = {
   'blocks.package-grid': PackageGrid,
   'blocks.testimonials': Testimonials,
   'blocks.cta-banner': CTABanner,
-  // ...one entry per Strapi component
+  // ...one entry per Wagtail component
 } as const;
 ```
 
@@ -116,7 +104,7 @@ export default function BlockRenderer({ blocks }: { blocks: any[] }) {
 
 Rendering a CMS page (`app/[slug]/page.tsx`):
 ```tsx
-import { fetchAPI } from '@/lib/strapi';
+import { fetchAPI } from '@/lib/wagtail';
 import BlockRenderer from '@/components/BlockRenderer';
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -128,19 +116,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
 }
 ```
 
-> **Rule:** every new Strapi component must get (a) a React block in `src/blocks/` and (b) an entry in `block-registry.ts`. If they drift, unknown blocks are skipped.
+> **Rule:** every new Wagtail component must get (a) a React block in `src/blocks/` and (b) an entry in `block-registry.ts`. If they drift, unknown blocks are skipped.
 
 ---
 
-## 5. CMS API client — `src/lib/strapi.ts`
+## 5. CMS API client — `src/lib/wagtail.ts`
 ```ts
-const STRAPI = process.env.NEXT_PUBLIC_STRAPI_URL;
+const WAGTAIL = process.env.NEXT_PUBLIC_WAGTAIL_URL;
 export async function fetchAPI(path: string) {
-  const res = await fetch(`${STRAPI}/api/${path}`, {
-    headers: { Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}` },
+  const res = await fetch(`${WAGTAIL}/api/${path}`, {
+    headers: { Authorization: `Bearer ${process.env.WAGTAIL_API_TOKEN}` },
     next: { revalidate: 60 },
   });
-  if (!res.ok) throw new Error(`Strapi ${res.status}`);
+  if (!res.ok) throw new Error(`Wagtail ${res.status}`);
   return res.json();
 }
 ```
@@ -148,97 +136,32 @@ export async function fetchAPI(path: string) {
 
 ---
 
-## 6. SDK integration — `src/lib/sdk.ts` (package data)
-
-> Placeholder shape — replace with the real Travories SDK API once we have its docs.
-
-```ts
-import { Travories } from '@travories/sdk'; // TBD
-
-export const travories = new Travories({
-  apiKey: process.env.TRAVORIES_API_KEY!,
-  baseUrl: process.env.TRAVORIES_BASE_URL,
-});
-
-export async function listPackages(params?: Record<string, unknown>) {
-  return travories.packages.list(params);        // shape TBD
-}
-export async function getPackage(id: string) {
-  return travories.packages.get(id);             // shape TBD
-}
-```
-
-**Package listing** (`app/packages/page.tsx`):
-```tsx
-import { listPackages } from '@/lib/sdk';
-import PackageCard from '@/components/PackageCard';
-
-export default async function Packages() {
-  const packages = await listPackages();
-  return (
-    <div className="grid grid-cols-3 gap-6">
-      {packages.map((p) => <PackageCard key={p.id} pkg={p} />)}
-    </div>
-  );
-}
-```
-
-**Package detail** (`app/packages/[id]/page.tsx`):
-```tsx
-import { getPackage } from '@/lib/sdk';
-
-export default async function PackageDetail({ params }) {
-  const pkg = await getPackage(params.id);
-  // render hero, itinerary, pricing, gallery, booking CTA from SDK data
-}
-```
-
-**PackageGrid block** bridges the two worlds: the CMS block stores which package ids/filters to feature; the block fetches real data from the SDK.
-```tsx
-// src/blocks/PackageGrid.tsx
-import { listPackages } from '@/lib/sdk';
-
-export default async function PackageGrid({ title, packageIds }) {
-  const packages = await listPackages({ ids: packageIds });
-  return (/* title + grid of PackageCard */);
-}
-```
-
----
-
-## 7. Pages / routes
+## 6. Pages / routes
 
 | Route | Source | Purpose |
 |-------|--------|---------|
 | `/` | CMS page `home` | blocks-composed homepage |
 | `/[slug]` | CMS page | about, landing pages, etc. |
-| `/packages` | **SDK** | package listing/search |
-| `/packages/[id]` | **SDK** | package detail (itinerary, pricing, booking) |
 
 Navbar/Footer: static or from a CMS "global" single type.
 
 ---
 
-## 8. Build order (frontend)
+## 7. Build order (frontend)
 
 - [ ] Scaffold Next.js + Tailwind, run dev server
-- [ ] `strapi.ts` + `types.ts` + `.env.local`
+- [ ] `wagtail.ts` + `types.ts` + `.env.local`
 - [ ] `BlockRenderer` + `block-registry` with 2–3 blocks (Hero, RichText, CTA)
 - [ ] Render a CMS page end-to-end (`/[slug]`)
-- [ ] Build out the full block library (match Strapi components)
-- [ ] `sdk.ts` — init the company SDK
-- [ ] `/packages` listing + `/packages/[id]` detail from SDK
-- [ ] `PackageGrid` block bridging CMS ids → SDK data
+- [ ] Build out the full block library (match Wagtail components)
 - [ ] Navbar/Footer, loading/error states, responsive
 - [ ] SEO metadata, image optimization
-- [ ] Deploy to Vercel; wire Strapi + SDK env
+- [ ] Deploy to Vercel; wire Wagtail env
 
 ---
 
-## 9. Gotchas
+## 8. Gotchas
 
-- Keep **Strapi components and the block registry in sync** — a registered CMS block with no React counterpart renders as nothing.
+- Keep **Wagtail components and the block registry in sync** — a registered CMS block with no React counterpart renders as nothing.
 - Dynamic Zones need **deep populate** or nested block data/media is missing.
-- Package data is the **SDK's** responsibility — don't duplicate it in the CMS; reference by id.
-- Never expose write/secret tokens client-side; call CMS + SDK from **server components** where possible.
-- Confirm the SDK's real API (init, list, get, types) before finalizing `sdk.ts`.
+- Never expose write/secret tokens client-side; call CMS from **server components** where possible.
