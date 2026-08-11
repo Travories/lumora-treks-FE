@@ -1,97 +1,92 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import Button from "@/components/ui/Button";
+import { motion } from "framer-motion";
 
-const EXPLORE_LINKS = ["Home", "Packages", "Destinations", "About Us"];
-const SUPPORT_LINKS = ["Contact Us", "FAQs", "Privacy Policy", "Terms of Service"];
+/** Footer — Figma node 73:464 ("Foreground Image"). Forest bg, logo + tagline +
+ * socials (left), links (right), and a giant "Lumora Treks" watermark that rises
+ * into place on scroll (Figma motion: y 244→0). */
 
 const SOCIALS = [
-  { icon: "mdi:facebook", href: "#" },
-  { icon: "mdi:instagram", href: "#" },
-  { icon: "mdi:twitter", href: "#" },
-  { icon: "mdi:youtube", href: "#" },
+  { icon: "mdi:facebook", label: "Facebook", href: "#" },
+  { icon: "mdi:instagram", label: "Instagram", href: "#" },
+  { icon: "prime:twitter", label: "X", href: "#" },
+  { icon: "mdi:whatsapp", label: "WhatsApp", href: "#" },
+];
+
+const LINKS = [
+  { label: "Contact Us", href: "/contact" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Login to Admin Portal", href: "/admin" },
 ];
 
 export default function Footer() {
   return (
-    <footer id="contact" className="bg-secondary text-text-inverse">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col gap-4">
-            <span className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-white">
-              <Icon icon="ph:mountains-fill" className="h-7 w-7 text-primary" />
-              Lumora Treks
-            </span>
-            <p className="max-w-xs text-sm leading-relaxed text-white/60">
-              Discover expertly crafted itineraries, local experiences, and seamless
-              bookings that turn every journey into a story worth telling.
+    <footer className="px-5 pb-5">
+      <div className="relative overflow-hidden rounded-[28px]">
+        <Image
+          src="/images/footer-bg.png"
+          alt=""
+          aria-hidden
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+
+        {/* Top content */}
+        <div className="relative mx-auto flex max-w-[1272px] flex-col gap-10 px-6 pt-8 md:flex-row md:items-start md:justify-between">
+          <div className="flex max-w-[628px] flex-col gap-6">
+            <Link href="/" className="flex items-end gap-[5px]">
+              <Image src="/logo.svg" alt="Lumora Treks" width={40} height={35} />
+              <span className="text-[28px] font-extrabold leading-none tracking-[-0.06em] text-foreground">
+                Lumora Treks
+              </span>
+            </Link>
+            <p className="font-body-alt text-xl tracking-[-0.04em] text-text-secondary">
+              Your trusted travel partner in Nepal. We curate authentic
+              experiences, breathtaking destinations, and unforgettable memories.
             </p>
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-5">
               {SOCIALS.map((social) => (
-                <Link
-                  key={social.icon}
+                <a
+                  key={social.label}
                   href={social.href}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-primary hover:text-secondary"
+                  aria-label={social.label}
+                  className="text-foreground transition-transform hover:scale-110"
                 >
-                  <Icon icon={social.icon} className="h-4 w-4" />
-                </Link>
+                  <Icon icon={social.icon} className="size-8" />
+                </a>
               ))}
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wide text-white/40">
-              Explore
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {EXPLORE_LINKS.map((link) => (
-                <li key={link}>
-                  <Link href="#" className="text-sm text-white/70 hover:text-primary">
-                    {link}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wide text-white/40">
-              Support
-            </h4>
-            <ul className="flex flex-col gap-3">
-              {SUPPORT_LINKS.map((link) => (
-                <li key={link}>
-                  <Link href="#" className="text-sm text-white/70 hover:text-primary">
-                    {link}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wide text-white/40">
-              Newsletter
-            </h4>
-            <p className="text-sm text-white/70">
-              Subscribe to get the latest travel deals and stories.
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-primary focus:outline-none"
-              />
-              <Button variant="primary" size="sm" className="shrink-0">
-                Join
-              </Button>
-            </div>
-          </div>
+          <nav className="flex flex-col gap-3 md:items-end md:text-right">
+            {LINKS.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="font-body-alt text-lg tracking-[-0.04em] text-foreground transition-colors hover:text-primary-active"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm text-white/40 md:flex-row">
-          <p>© {new Date().getFullYear()} Lumora Treks. All rights reserved.</p>
-          <p>Designed & built with care for travelers everywhere.</p>
+        {/* Watermark */}
+        <div className="relative mt-6 overflow-hidden">
+          <motion.p
+            initial={{ y: 160 }}
+            whileInView={{ y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="whitespace-nowrap text-center text-[clamp(3.5rem,18vw,210px)] font-bold leading-none tracking-[-0.04em] text-[rgb(245_245_245_/_70%)]"
+          >
+            Lumora Treks
+          </motion.p>
         </div>
       </div>
     </footer>

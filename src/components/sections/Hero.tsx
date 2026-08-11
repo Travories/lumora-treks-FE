@@ -1,142 +1,113 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
-import Button from "@/components/ui/Button";
+import { motion } from "framer-motion";
+import SearchBar from "@/components/ui/SearchBar";
 
-const SLIDES = [
-  { image: "/images/hero.png", alt: "Nepal mountain landscape" },
-  { image: "/images/region-everest.png", alt: "Everest region peaks" },
-  { image: "/images/region-annapurna.png", alt: "Annapurna region trail" },
-];
-
-// Stylized jagged skyline used to mask the heading behind a mountain cutout.
-// Reuses each slide's own image for the cutout layer, so the texture always
-// matches — no separate transparent asset is needed.
-const MOUNTAIN_CLIP =
-  "polygon(0% 100%, 0% 78%, 8% 65%, 16% 72%, 24% 50%, 30% 68%, 38% 42%, 46% 60%, 54% 38%, 62% 58%, 70% 46%, 78% 64%, 86% 52%, 94% 70%, 100% 60%, 100% 100%)";
-
+/**
+ * Hero — Figma node 104:1763 ("prototype").
+ *
+ * Motion (Figma timeline, played once on load instead of Figma's boomerang loop):
+ *  - Heading rises 67px into place (ease-in, ~0.85s).
+ *  - Subtitle + search bar fade in after the heading settles (delay 0.85s, ~0.75s).
+ *  - Destination card fades in over the same window (delay 0.85s, ~1.15s).
+ *
+ * The foreground mountain cutout (transparent PNG) sits ABOVE the heading, so the
+ * peaks visually overlap the text — matching the Figma layering.
+ */
 export default function Hero() {
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  const goToSlide = (direction: 1 | -1) => {
-    setActiveSlide((prev) => (prev + direction + SLIDES.length) % SLIDES.length);
-  };
-
   return (
-    <section className="relative">
-      <div className="relative h-140 w-full overflow-hidden rounded-b-[2.5rem] sm:h-160 lg:h-180">
-        {/* Background layer */}
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={`bg-${activeSlide}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="absolute inset-0 z-0"
-          >
-            <Image
-              src={SLIDES[activeSlide].image}
-              alt={SLIDES[activeSlide].alt}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-        </AnimatePresence>
+    <section className="w-full p-5">
+      <div className="relative aspect-[1400/790] min-h-[560px] w-full overflow-hidden rounded-[2rem]">
+        {/* Background scene */}
+        <Image
+          src="/images/hero-bg.png"
+          alt="Snow-capped mountain landscape"
+          fill
+          priority
+          sizes="(max-width: 1440px) 100vw, 1400px"
+          className="object-cover"
+        />
 
-        {/* Heading — sits between the background and the mountain cutout above it */}
+        {/* Heading — behind the foreground cutout */}
         <motion.h1
-          initial={{ opacity: 0, y: 140 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute left-6 top-8 z-10 max-w-3xl text-5xl font-extrabold leading-[0.95] tracking-tight text-foreground sm:top-10 sm:text-7xl lg:left-12 lg:top-12 lg:text-8xl"
+          initial={{ y: 48, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-x-0 top-[28%] z-10 px-6 text-center text-[clamp(2.5rem,8vw,100px)] font-extrabold leading-none tracking-[-0.06em] text-foreground"
         >
           Travel beyond destinations
         </motion.h1>
 
-        {/* Foreground mountain cutout — same photo, clipped to a skyline shape,
-            so the peaks visually sit in front of the heading text */}
-        <AnimatePresence initial={false}>
+        {/* Foreground mountain cutout — in front of the heading */}
+        <Image
+          src="/images/hero-foreground.png"
+          alt=""
+          aria-hidden
+          fill
+          priority
+          sizes="(max-width: 1440px) 100vw, 1400px"
+          className="pointer-events-none z-20 object-cover"
+        />
+
+        {/* Prev / next arrows */}
+        <button
+          type="button"
+          aria-label="Previous"
+          className="absolute left-4 top-1/2 z-30 flex size-7 -translate-y-1/2 items-center justify-center text-foreground transition-transform hover:-translate-x-0.5 hover:-translate-y-1/2"
+        >
+          <Icon icon="iconoir:nav-arrow-left" className="size-7" />
+        </button>
+        <button
+          type="button"
+          aria-label="Next"
+          className="absolute right-4 top-1/2 z-30 flex size-7 -translate-y-1/2 items-center justify-center text-foreground transition-transform hover:translate-x-0.5 hover:-translate-y-1/2"
+        >
+          <Icon icon="iconoir:nav-arrow-right" className="size-7" />
+        </button>
+
+        {/* Bottom overlay: subtitle + search bar (left) and destination card (right) */}
+        <div className="absolute inset-x-0 bottom-6 z-30 flex flex-col items-stretch gap-6 px-6 lg:bottom-8 lg:flex-row lg:items-end lg:justify-between lg:px-12">
+          {/* subtitle-frame */}
           <motion.div
-            key={`fg-${activeSlide}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="pointer-events-none absolute inset-0 z-20"
-            style={{ clipPath: MOUNTAIN_CLIP }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.55, ease: "easeOut" }}
+            className="flex w-full flex-col gap-6 lg:max-w-[684px]"
           >
-            <Image
-              src={SLIDES[activeSlide].image}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
+            <div className="flex items-end gap-2">
+              <span className="text-[clamp(1.5rem,3vw,40px)] font-bold leading-none tracking-[-0.06em] text-white [text-shadow:0_2px_16px_rgb(0_0_0_/_45%)]">
+                Creating lifelong memories
+              </span>
+              <span className="mb-1 size-3 shrink-0 rounded-full bg-primary-accent" />
+            </div>
+
+            <SearchBar />
           </motion.div>
-        </AnimatePresence>
 
-        <button
-          type="button"
-          onClick={() => goToSlide(-1)}
-          aria-label="Previous slide"
-          className="absolute left-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-secondary shadow-lg transition-transform hover:scale-105 sm:left-6"
-        >
-          <Icon icon="iconoir:nav-arrow-left" className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => goToSlide(1)}
-          aria-label="Next slide"
-          className="absolute right-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-secondary shadow-lg transition-transform hover:scale-105 sm:right-6"
-        >
-          <Icon icon="iconoir:nav-arrow-right" className="h-5 w-5" />
-        </button>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="absolute inset-x-0 bottom-6 z-30 flex justify-center px-6"
-        >
-          <div className="flex w-full max-w-3xl flex-col gap-3 rounded-2xl bg-white p-3 shadow-xl sm:flex-row sm:items-center sm:rounded-full">
-            <div className="flex flex-1 items-center gap-3 px-4 py-2">
-              <Icon icon="proicons:location" className="h-5 w-5 shrink-0 text-primary" />
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-semibold text-text-muted">Location</span>
-                <input
-                  type="text"
-                  placeholder="Where to go?"
-                  className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
-                />
-              </div>
+          {/* destinations card */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.38, duration: 0.55, ease: "easeOut" }}
+            className="flex w-full flex-col gap-4 rounded-2xl bg-white p-6 lg:w-[354px] lg:shrink-0"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
+                Lantang Valley
+              </span>
+              <Icon
+                icon="iconoir:arrow-up-right"
+                className="size-8 shrink-0 text-foreground"
+              />
             </div>
-
-            <div className="hidden h-8 w-px bg-border sm:block" />
-
-            <div className="flex flex-1 items-center gap-3 px-4 py-2">
-              <Icon icon="iconoir:calendar" className="h-5 w-5 shrink-0 text-primary" />
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-semibold text-text-muted">Date</span>
-                <input
-                  type="text"
-                  placeholder="Add dates"
-                  className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <Button variant="primary" size="md" className="w-full sm:w-auto">
-              <Icon icon="mingcute:search-line" className="h-5 w-5" />
-              Search
-            </Button>
-          </div>
-        </motion.div>
+            <p className="text-base font-medium leading-snug tracking-tight text-text-secondary">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

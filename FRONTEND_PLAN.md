@@ -1,9 +1,10 @@
 # Lumora Treks — Frontend Plan (Next.js)
 
-The public travel-agency website. It has **one data source**:
-1. **Wagtail CMS** → editorial pages assembled from **blocks** (rendered by `<BlockRenderer>`).
+The public travel-agency website. Editorial pages are assembled from **blocks** delivered by the **Wagtail CMS** and rendered by `<BlockRenderer>`.
 
-← Back to [`PLAN.md`](./PLAN.md) · Backend: [`BACKEND_PLAN.md`](./BACKEND_PLAN.md)
+> **Repo scope:** this repo is the **frontend only**. The **Wagtail/Django CMS lives in a separate repo** — we only consume its API here. Every block is registered on **both** sides (Wagtail StreamField + this frontend); see §4.
+
+← Back to [`PLAN.md`](./PLAN.md)
 
 ---
 
@@ -13,7 +14,8 @@ The public travel-agency website. It has **one data source**:
 |---------|--------|
 | Framework | **Next.js (App Router) + TypeScript** |
 | Styling | **Tailwind CSS** |
-| CMS data | Native `fetch` (server components) |
+| CMS data | Native `fetch` (server components), Wagtail API v2 |
+| Motion | Figma motion reproduced in code (**Motion / `framer-motion`** — TBD) |
 | Images | `next/image` |
 | Lint/format | ESLint + Prettier |
 
@@ -55,8 +57,8 @@ frontend/
 │   │   └── ...
 │   ├── components/                  # shared UI (Navbar, Footer, PackageCard)
 │   ├── lib/
-│   │   ├── wagtail.ts               # CMS API client
-│   │   ├── block-registry.ts        # maps block __component → React block
+│   │   ├── wagtail.ts               # CMS API client (Wagtail API v2)
+│   │   ├── block-registry.ts        # maps block.type → React block
 │   │   └── types.ts
 │   └── styles/
 └── .env.local
@@ -66,7 +68,7 @@ frontend/
 
 ## 4. The Block Renderer (core of the CMS side)
 
-Wagtail returns a page as an ordered array of blocks, each tagged with `__component` (e.g. `"blocks.hero"`). The renderer maps that string to a React component.
+Wagtail's **StreamField** returns a page body as an ordered array of blocks, each shaped `{ type, value, id }` (e.g. `{ type: "hero", value: {...}, id: "..." }`). The renderer maps `type` → a React component and passes `value` as its props.
 
 `src/lib/block-registry.ts`:
 ```ts
@@ -77,11 +79,11 @@ import CTABanner from '@/blocks/CTABanner';
 // ...import every registered block
 
 export const blockRegistry = {
-  'blocks.hero': Hero,
-  'blocks.package-grid': PackageGrid,
-  'blocks.testimonials': Testimonials,
-  'blocks.cta-banner': CTABanner,
-  // ...one entry per Wagtail component
+  hero: Hero,
+  'package-grid': PackageGrid,
+  testimonials: Testimonials,
+  'cta-banner': CTABanner,
+  // ...one entry per Wagtail StreamField block (key = block type)
 } as const;
 ```
 
@@ -92,10 +94,10 @@ import { blockRegistry } from '@/lib/block-registry';
 export default function BlockRenderer({ blocks }: { blocks: any[] }) {
   return (
     <>
-      {blocks.map((block, i) => {
-        const Component = blockRegistry[block.__component];
+      {blocks.map((block) => {
+        const Component = blockRegistry[block.type];
         if (!Component) return null; // unknown block → skip (log in dev)
-        return <Component key={`${block.__component}-${i}`} {...block} />;
+        return <Component key={block.id} {...block.value} />;
       })}
     </>
   );
@@ -108,15 +110,13 @@ import { fetchAPI } from '@/lib/wagtail';
 import BlockRenderer from '@/components/BlockRenderer';
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const { data } = await fetchAPI(
-    `pages?filters[slug][$eq]=${params.slug}&populate=deep`
-  );
-  const page = data[0];
-  return <BlockRenderer blocks={page.blocks} />;
+  const { items } = await fetchAPI(`pages/?slug=${params.slug}&fields=*`);
+  const page = items[0];
+  return <BlockRenderer blocks={page.body} />; // StreamField field, e.g. `body`
 }
 ```
 
-> **Rule:** every new Wagtail component must get (a) a React block in `src/blocks/` and (b) an entry in `block-registry.ts`. If they drift, unknown blocks are skipped.
+> **Dual-registration rule:** every block must get (a) a Wagtail StreamField `StructBlock` in the CMS repo, (b) a React block in `src/blocks/`, and (c) an entry in `block-registry.ts`. The React props **mirror the Wagtail block's fields**. If they drift, unknown blocks are skipped.
 
 ---
 
@@ -124,7 +124,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 ```ts
 const WAGTAIL = process.env.NEXT_PUBLIC_WAGTAIL_URL;
 export async function fetchAPI(path: string) {
-  const res = await fetch(`${WAGTAIL}/api/${path}`, {
+  const res = await fetch(`${WAGTAIL}/api/v2/${path}`, {
     headers: { Authorization: `Bearer ${process.env.WAGTAIL_API_TOKEN}` },
     next: { revalidate: 60 },
   });
@@ -132,7 +132,7 @@ export async function fetchAPI(path: string) {
   return res.json();
 }
 ```
-> Dynamic Zones + relations + media need deep populate. Use the `populate=deep` plugin or explicit populate per block.
+> Wagtail API v2 lives under `/api/v2/`. Use the **`fields`** param to pull nested block/relation/image data (e.g. `fields=*` for everything, or an explicit list). StreamField blocks come back as `{ type, value, id }`.
 
 ---
 
@@ -162,6 +162,17 @@ Navbar/Footer: static or from a CMS "global" single type.
 
 ## 8. Gotchas
 
-- Keep **Wagtail components and the block registry in sync** — a registered CMS block with no React counterpart renders as nothing.
-- Dynamic Zones need **deep populate** or nested block data/media is missing.
-- Never expose write/secret tokens client-side; call CMS from **server components** where possible.
+- Keep **Wagtail StreamField blocks and the block registry in sync** — a CMS block with no React counterpart (or vice versa) renders as nothing.
+- Nested block/relation/image data is missing unless you request it via the **`fields`** param on the API v2 call.
+- Block props must **mirror the Wagtail block's field names** exactly (props come straight from `block.value`).
+- Never expose write/secret tokens client-side; call the CMS from **server components** where possible.
+
+---
+
+## 9. Figma → code (design + motion)
+
+Components are implemented from **Figma**, and Figma designs carry **motion** we reproduce in code.
+
+- Load the relevant Figma skill before the Figma MCP read tools (`figma-design-to-code`; `figma-implement-motion` for animated nodes).
+- Per component: read design + motion context → build the React block in `src/blocks/` → register in `block-registry.ts` → mirror the fields as a Wagtail StreamField block (CMS repo) → verify in the running app.
+- Motion library: **Motion / `framer-motion`** (TBD) — reproduces Figma transitions/easing/keyframes.
