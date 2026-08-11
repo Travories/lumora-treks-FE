@@ -7,17 +7,23 @@ import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
 import { useGetPopularPackagesQuery } from "@/features/packages/packagesApi";
+import type { PackageCardData } from "@/types";
 
-/** Our Packages — Figma node 84:938. Embla carousel of package cards. */
+/** Our Packages — Figma node 84:938. Embla carousel of package cards.
+ * `initialItems` (server-provided) gives SSR content; the query hydrates it. */
 
-export default function PopularPackages() {
-  const {
-    data: packages = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useGetPopularPackagesQuery();
-  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel();
+export default function PopularPackages({
+  initialItems,
+}: {
+  initialItems?: PackageCardData[];
+}) {
+  const { data, isLoading, isError, refetch } = useGetPopularPackagesQuery();
+  const packages = data ?? initialItems ?? [];
+  const loading = isLoading && !initialItems;
+  const errored = isError && !initialItems;
+  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
+    loop: true,
+  });
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -39,9 +45,9 @@ export default function PopularPackages() {
         />
       </div>
 
-      {isError ? (
+      {errored ? (
         <QueryError message="Couldn't load packages." onRetry={refetch} />
-      ) : isLoading ? (
+      ) : loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <CardSkeleton key={i} />

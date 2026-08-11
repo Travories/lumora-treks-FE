@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import PackageCard from "@/components/ui/PackageCard";
@@ -10,25 +10,34 @@ import Pagination from "@/components/ui/Pagination";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useGetPackagesQuery } from "@/features/packages/packagesApi";
+import type { PackageListResult } from "@/types";
 
 /** Popular Packages — Figma node 83:656. Header + filter tabs + card grid +
- * pagination. Tabs filter by category; a `searchLocation` (from the SearchBar,
- * read off the URL) overrides the tabs and filters by title. Dummy data. */
+ * pagination. Tabs filter by category; a `searchLocation` (from the SearchBar)
+ * overrides the tabs and filters by title. `initialData` (server-provided) gives
+ * SSR content for the first render. Dummy data. */
 
 const CATEGORIES = ["Trekking", "Sightseeing", "Paragliding"];
 const PAGE_SIZE = 6;
 
 export default function PopularPackagesGrid({
   searchLocation,
+  initialData,
 }: {
   searchLocation?: string;
+  initialData?: PackageListResult;
 }) {
   const router = useRouter();
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [page, setPage] = useState(1);
 
-  // Reset to page 1 when a new search arrives.
-  useEffect(() => setPage(1), [searchLocation]);
+  // Reset to page 1 the moment a new search arrives — render-phase, so the query
+  // never runs with a stale page (no empty-state flash).
+  const [prevSearch, setPrevSearch] = useState(searchLocation);
+  if (prevSearch !== searchLocation) {
+    setPrevSearch(searchLocation);
+    setPage(1);
+  }
 
   const { data, isLoading, isError, refetch } = useGetPackagesQuery({
     category: searchLocation ? undefined : category,
@@ -36,8 +45,11 @@ export default function PopularPackagesGrid({
     page,
     pageSize: PAGE_SIZE,
   });
-  const packages = data?.items ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  const result = data ?? initialData;
+  const packages = result?.items ?? [];
+  const totalPages = result?.totalPages ?? 1;
+  const loading = isLoading && !initialData;
+  const errored = isError && !initialData;
 
   const handleCategory = (next: string) => {
     setCategory(next);
@@ -82,9 +94,9 @@ export default function PopularPackagesGrid({
         )}
       </div>
 
-      {isError ? (
+      {errored ? (
         <QueryError message="Couldn't load packages." onRetry={refetch} />
-      ) : isLoading ? (
+      ) : loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <CardSkeleton key={i} />

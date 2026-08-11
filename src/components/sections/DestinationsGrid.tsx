@@ -8,18 +8,23 @@ import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
 import { useGetDestinationsQuery } from "@/features/destinations/destinationsApi";
+import type { DestinationCardData } from "@/types";
 
 /** Our Destinations — Figma node 84:1575. Filter tabs + Embla carousel of
  * destination cards. Tabs presentational. */
 
-export default function DestinationsGrid() {
-  const {
-    data: destinations = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useGetDestinationsQuery();
-  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel();
+export default function DestinationsGrid({
+  initialItems,
+}: {
+  initialItems?: DestinationCardData[];
+}) {
+  const { data, isLoading, isError, refetch } = useGetDestinationsQuery();
+  const destinations = data ?? initialItems ?? [];
+  const loading = isLoading && !initialItems;
+  const errored = isError && !initialItems;
+  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
+    loop: true,
+  });
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -39,9 +44,9 @@ export default function DestinationsGrid() {
         <FilterTabs tabs={["Trekking", "Sightseeing", "Paragliding"]} />
       </div>
 
-      {isError ? (
+      {errored ? (
         <QueryError message="Couldn't load destinations." onRetry={refetch} />
-      ) : isLoading ? (
+      ) : loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <CardSkeleton key={i} />

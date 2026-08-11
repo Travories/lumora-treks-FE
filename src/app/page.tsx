@@ -9,6 +9,7 @@ import DestinationsBento from "@/components/sections/DestinationsBento";
 import AuthenticExperiences from "@/components/sections/AuthenticExperiences";
 import CTABand from "@/components/sections/CTABand";
 import FAQSection from "@/components/sections/FAQSection";
+import { POPULAR_PACKAGES } from "@/features/packages/packagesData";
 
 export default function Home() {
   return (
@@ -22,7 +23,7 @@ export default function Home() {
           <Hero />
         </div>
         <IntroStats />
-        <PopularPackages />
+        <PopularPackages initialItems={POPULAR_PACKAGES} />
         <ExperienceSection />
         <WhyChooseUs />
         <DestinationsBento />

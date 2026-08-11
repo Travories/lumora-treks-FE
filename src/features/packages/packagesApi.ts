@@ -1,83 +1,25 @@
 import { apiSlice } from "@/store/api/apiSlice";
 import type { PackageCardData, PackageListResult } from "@/types";
+import {
+  POPULAR_PACKAGES,
+  CULTURAL_TOURS,
+  selectPackages,
+  type SelectPackagesParams,
+} from "./packagesData";
 
 /**
- * Package endpoints. Dummy data for now (see apiSlice's `fakeBaseQuery`) — this
- * is the seam for the Travories SDK / package API. Swapping each `queryFn` for a
- * real query later requires NO component changes.
+ * Package endpoints. Dummy data via `packagesData` for now (see apiSlice's
+ * `fakeBaseQuery`) — the seam for the Travories API. Swapping each `queryFn` for
+ * a real query later requires NO component changes.
  */
-
-const DESC =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor .";
-const withDefaults = (
-  p: Pick<PackageCardData, "id" | "title" | "image"> & { category?: string }
-): PackageCardData => ({
-  ...p,
-  description: DESC,
-  price: "$400 per person",
-  duration: "4 Days",
-  rating: "4.9",
-});
-
-const POPULAR_PACKAGES: PackageCardData[] = [
-  { id: "dhorpatan-region", title: "Dhorpatan Region", image: "/images/pkg-dhorpatan.png" },
-  { id: "pokhara-tours", title: "Pokhara Tours", image: "/images/pkg-pokhara.png" },
-  { id: "ghandruk-annapurna", title: "Ghandruk and Annapurna region", image: "/images/pkg-annapurna.png" },
-].map(withDefaults);
-
-const TITLES = ["Dhorpatan Region", "Pokhara Tours", "Ghandruk and Annapurna region"];
-
-/** Build `count` dummy packages for a category (images cycle through pkgp-1..6). */
-const build = (count: number, category: string, prefix: string): PackageCardData[] =>
-  Array.from({ length: count }, (_, i) =>
-    withDefaults({
-      id: `${prefix}-${i + 1}`,
-      title: TITLES[i % TITLES.length],
-      image: `/images/pkgp-${(i % 6) + 1}.png`,
-      category,
-    })
-  );
-
-// 15 packages across the three FilterTabs categories → real pagination.
-const PACKAGES: PackageCardData[] = [
-  ...build(8, "Trekking", "trek"),
-  ...build(4, "Sightseeing", "sight"),
-  ...build(3, "Paragliding", "para"),
-];
-
-const CULTURAL_TOURS: PackageCardData[] = [
-  { id: "cultural-dhorpatan", title: "Dhorpatan Region", image: "/images/cultural-1.png" },
-  { id: "cultural-pokhara", title: "Pokhara Tours", image: "/images/cultural-2.png" },
-  { id: "cultural-ghandruk", title: "Ghandruk and Annapurna region", image: "/images/pkgp-3.png" },
-].map(withDefaults);
-
 export const packagesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getPopularPackages: builder.query<PackageCardData[], void>({
       queryFn: () => ({ data: POPULAR_PACKAGES }),
       providesTags: ["Package"],
     }),
-    getPackages: builder.query<
-      PackageListResult,
-      { category?: string; location?: string; page?: number; pageSize?: number } | void
-    >({
-      queryFn: (arg) => {
-        const { category, location, page = 1, pageSize = 6 } = arg ?? {};
-        // A location search (from SearchBar) matches package titles and takes
-        // precedence over the category tabs.
-        let filtered = PACKAGES;
-        if (location) {
-          const q = location.toLowerCase();
-          filtered = filtered.filter((p) => p.title.toLowerCase().includes(q));
-        } else if (category) {
-          filtered = filtered.filter((p) => p.category === category);
-        }
-        const total = filtered.length;
-        const totalPages = Math.max(1, Math.ceil(total / pageSize));
-        const start = (page - 1) * pageSize;
-        const items = filtered.slice(start, start + pageSize);
-        return { data: { items, page, pageSize, total, totalPages } };
-      },
+    getPackages: builder.query<PackageListResult, SelectPackagesParams | void>({
+      queryFn: (arg) => ({ data: selectPackages(arg ?? {}) }),
       providesTags: ["Package"],
     }),
     getCulturalTours: builder.query<PackageCardData[], void>({

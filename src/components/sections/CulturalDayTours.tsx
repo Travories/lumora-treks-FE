@@ -7,17 +7,22 @@ import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
 import { useGetCulturalToursQuery } from "@/features/packages/packagesApi";
+import type { PackageCardData } from "@/types";
 
 /** Cultural & Day Tours — Figma node 84:1278. Embla carousel of package cards. */
 
-export default function CulturalDayTours() {
-  const {
-    data: tours = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useGetCulturalToursQuery();
-  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel();
+export default function CulturalDayTours({
+  initialItems,
+}: {
+  initialItems?: PackageCardData[];
+}) {
+  const { data, isLoading, isError, refetch } = useGetCulturalToursQuery();
+  const tours = data ?? initialItems ?? [];
+  const loading = isLoading && !initialItems;
+  const errored = isError && !initialItems;
+  const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
+    loop: true,
+  });
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -39,9 +44,9 @@ export default function CulturalDayTours() {
         />
       </div>
 
-      {isError ? (
+      {errored ? (
         <QueryError message="Couldn't load tours." onRetry={refetch} />
-      ) : isLoading ? (
+      ) : loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <CardSkeleton key={i} />
