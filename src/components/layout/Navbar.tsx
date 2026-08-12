@@ -28,10 +28,16 @@ export default function Navbar() {
   const { data: site, isLoading } = useSiteSettingsQuery();
 
   const siteName = site?.brand.site_name || "Lumora Treks";
-  const links =
+  const cmsLinks =
     site?.navigation.items
       .map((item) => ({ label: item.value.label || "", href: item.value.href || "" }))
-      .filter((link) => link.label && link.href) ?? [];
+      .filter((link) => link.label && link.href);
+  const links = cmsLinks?.length ? cmsLinks : [
+        { label: "Home", href: "/" },
+        { label: "Packages", href: "/packages" },
+        { label: "Destinations", href: "/destinations" },
+        { label: "Contact Us", href: "/contact" },
+      ];
   const ctaLink = site?.navigation.cta_button[0]?.value;
   const cta = { label: ctaLink?.label || "Reserve Now", href: ctaLink?.href || "/enquiry" };
 

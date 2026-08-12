@@ -21,18 +21,32 @@ export default function Footer() {
   const { data: site } = useSiteSettingsQuery();
 
   const siteName = site?.brand.site_name || "Lumora Treks";
-  const description = site?.footer?.description || "";
+  const description =
+    site?.footer?.description ||
+    "Your trusted travel partner in Nepal. We curate authentic experiences, breathtaking destinations, and unforgettable memories.";
 
-  const socials =
+  const cmsSocials =
     site?.footer?.socials
       ?.map((s) => ({ icon: s.value.icon, label: s.value.platform, href: s.value.url }))
-      .filter((s) => s.icon && s.href) ?? [];
+      .filter((s) => s.icon && s.href);
+  const socials = cmsSocials?.length ? cmsSocials : [
+        { icon: "mdi:facebook", label: "Facebook", href: "#" },
+        { icon: "mdi:instagram", label: "Instagram", href: "#" },
+        { icon: "prime:twitter", label: "X", href: "#" },
+        { icon: "mdi:whatsapp", label: "WhatsApp", href: "#" },
+      ];
 
-  const links =
+  const cmsLinks =
     site?.footer?.columns
       ?.flatMap((c) => c.value.links)
       .map((l) => ({ label: l.label || "", href: l.href || "" }))
-      .filter((l) => l.label && l.href) ?? [];
+      .filter((l) => l.label && l.href);
+  const links = cmsLinks?.length ? cmsLinks : [
+        { label: "Contact Us", href: "/contact" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms & Conditions", href: "/terms" },
+        { label: "Login to Admin Portal", href: "/admin" },
+      ];
 
   return (
     <footer className="px-5 pb-5">
