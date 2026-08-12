@@ -7,10 +7,19 @@ import { Icon } from "@iconify/react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { useUIStore } from "@/store/useUIStore";
+import { useGetSiteSettingsQuery } from "@/features/site/siteApi";
 
-/** Navbar — Figma node 69:873. */
+/** Navbar — Figma node 69:873.
+ *
+ * Nav links, "Reserve Now" href/label and the brand name come from
+ * `/api/v2/site/` (`NavigationSettings`/`BrandSettings`, backend
+ * `apps/navigation/models.py`) when available; falls back to the original
+ * Figma copy while loading, on error, or once the query resolves empty (a
+ * fresh CMS with no nav items configured yet). Logo mark stays the static
+ * `/logo.svg` asset either way (see Hero's mountain-cutout note — swapping
+ * to a CMS-uploaded raster logo needs its own treatment). */
 
-const NAV_LINKS = [
+const DEFAULT_NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Packages", href: "/packages" },
   { label: "Destinations", href: "/destinations" },
@@ -22,51 +31,72 @@ export default function Navbar() {
   const isMobileNavOpen = useUIStore((s) => s.isMobileNavOpen);
   const toggleMobileNav = useUIStore((s) => s.toggleMobileNav);
   const closeMobileNav = useUIStore((s) => s.closeMobileNav);
+  const { data: site, isLoading } = useGetSiteSettingsQuery();
+
+  const siteName = site?.brand.site_name || "Lumora Treks";
+  const navLinks =
+    site?.navigation.items
+      .map((item) => ({ label: item.value.label || "", href: item.value.href || "" }))
+      .filter((link) => link.label && link.href) ?? [];
+  const links = navLinks.length ? navLinks : DEFAULT_NAV_LINKS;
+  const ctaLink = site?.navigation.cta_button[0]?.value;
+  const cta = { label: ctaLink?.label || "Reserve Now", href: ctaLink?.href || "/enquiry" };
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
 
   return (
     <header className="w-full px-8 py-4 sm:px-12 lg:px-16">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-end gap-[5px]">
-          <Image src="/logo.svg" alt="Lumora Treks" width={34} height={30} priority />
+          <Image src="/logo.svg" alt={siteName} width={34} height={30} priority />
           <span className="text-2xl font-extrabold leading-none tracking-[-0.06em] text-foreground">
-            Lumora Treks
+            {siteName}
           </span>
         </Link>
 
         {/* Desktop nav pill */}
         <nav className="hidden items-center gap-8 rounded-full bg-background px-6 py-3 lg:flex">
-          {NAV_LINKS.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <Link key={link.href} href={link.href} className="flex items-center gap-1">
-                {active && (
-                  <span className="size-1.5 shrink-0 rounded-full bg-primary-accent" />
-                )}
-                <span
-                  className={clsx(
-                    "text-base text-foreground",
-                    active
-                      ? "font-extrabold tracking-[-0.04em]"
-                      : "font-semibold tracking-[-0.06em]"
+          {isLoading ? (
+            <div className="flex items-center gap-6 animate-pulse">
+              <div className="h-4 w-12 rounded bg-muted" />
+              <div className="h-4 w-16 rounded bg-muted" />
+              <div className="h-4 w-20 rounded bg-muted" />
+              <div className="h-4 w-16 rounded bg-muted" />
+            </div>
+          ) : (
+            links.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link key={link.href} href={link.href} className="flex items-center gap-1">
+                  {active && (
+                    <span className="size-1.5 shrink-0 rounded-full bg-primary-accent" />
                   )}
-                >
-                  {link.label}
-                </span>
-              </Link>
-            );
-          })}
+                  <span
+                    className={clsx(
+                      "text-base text-foreground",
+                      active
+                        ? "font-extrabold tracking-[-0.04em]"
+                        : "font-semibold tracking-[-0.06em]"
+                    )}
+                  >
+                    {link.label}
+                  </span>
+                </Link>
+              );
+            })
+          )}
         </nav>
+
 
         {/* Reserve (desktop) */}
         <Link
-          href="/enquiry"
+          href={cta.href}
           className="hidden shrink-0 items-center justify-center rounded-full bg-foreground px-5 py-2.5 font-body-alt text-base font-semibold tracking-[-0.04em] text-background transition-transform hover:scale-[1.03] active:scale-95 lg:inline-flex"
         >
-          Reserve Now
+          {cta.label}
         </Link>
 
         {/* Mobile toggle */}
@@ -91,7 +121,7 @@ export default function Navbar() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="mx-auto mt-3 flex max-w-[1440px] flex-col gap-1 rounded-2xl bg-background p-4 lg:hidden"
           >
-            {NAV_LINKS.map((link) => {
+            {links.map((link) => {
               const active = isActive(link.href);
               return (
                 <Link
@@ -115,11 +145,11 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="/enquiry"
+              href={cta.href}
               onClick={closeMobileNav}
               className="mt-2 inline-flex items-center justify-center rounded-[34px] bg-foreground px-6 py-3.5 font-body-alt text-lg font-semibold text-background"
             >
-              Reserve Now
+              {cta.label}
             </Link>
           </motion.nav>
         )}

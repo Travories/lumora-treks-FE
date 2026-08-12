@@ -42,6 +42,14 @@ export type CmsHeadingGroup = {
   align?: "center" | "left";
 };
 
+/** `LumoraPagination`'s response envelope (backend `apps/core/api/pagination.py`)
+ * — every list endpoint under `/api/v2/` (packages, destinations,
+ * testimonials, videos) returns this shape. */
+export type CmsListResponse<T> = {
+  meta: { total_count: number; limit: number; offset: number };
+  items: T[];
+};
+
 export type CmsBlock = {
   type: string;
   value: CmsBlockValue;

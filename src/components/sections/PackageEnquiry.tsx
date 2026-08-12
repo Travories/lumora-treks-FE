@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import StarRating from "@/components/ui/StarRating";
+import { useSubmitLeadMutation } from "@/features/leads/leadsApi";
 
 /** Package enquiry — reached from a package detail page. A no-payment enquiry
- * form + package summary. Presentational (later → contact/booking API). */
+ * form + package summary. Submits to `/api/v2/leads/` (`form_key: "enquiry"`);
+ * phone/travel_date/travelers/message ride along as extra fields on the lead
+ * (see `leadsApi.ts`). */
 
 const inputBase =
   "w-full rounded-lg border border-border p-3 font-body-alt text-base tracking-[-0.04em] text-foreground placeholder:text-[#909dad] focus:outline-none";
@@ -25,6 +28,25 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 export default function PackageEnquiry() {
   const [sent, setSent] = useState(false);
+  const [submitLead, { isLoading, isError }] = useSubmitLeadMutation();
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    submitLead({
+      form_key: "enquiry",
+      name: String(data.get("full_name") || ""),
+      email: String(data.get("email") || ""),
+      phone: String(data.get("phone") || ""),
+      message: String(data.get("message") || ""),
+      travel_date: String(data.get("travel_date") || ""),
+      travelers: String(data.get("travelers") || ""),
+      source_url: window.location.href,
+    })
+      .unwrap()
+      .then(() => setSent(true))
+      .catch(() => {});
+  };
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-12 lg:px-20">
@@ -66,31 +88,29 @@ export default function PackageEnquiry() {
             </div>
           ) : (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSent(true);
-              }}
+              onSubmit={handleSubmit}
               className="flex flex-col gap-6 rounded-lg border border-border p-6"
             >
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Full Name">
-                  <input required type="text" placeholder="Enter your full name" className={inputBase} />
+                  <input required name="full_name" type="text" placeholder="Enter your full name" className={inputBase} />
                 </Field>
                 <Field label="Email Address">
-                  <input required type="email" placeholder="Enter your email" className={inputBase} />
+                  <input required name="email" type="email" placeholder="Enter your email" className={inputBase} />
                 </Field>
                 <Field label="Phone Number">
-                  <input type="tel" placeholder="Enter your phone number" className={inputBase} />
+                  <input name="phone" type="tel" placeholder="Enter your phone number" className={inputBase} />
                 </Field>
                 <Field label="Travel Date">
-                  <input type="text" placeholder="When do you want to travel?" className={inputBase} />
+                  <input name="travel_date" type="text" placeholder="When do you want to travel?" className={inputBase} />
                 </Field>
               </div>
               <Field label="Number of Travelers">
-                <input type="text" placeholder="e.g. 2 Adults, 1 Child" className={inputBase} />
+                <input name="travelers" type="text" placeholder="e.g. 2 Adults, 1 Child" className={inputBase} />
               </Field>
               <Field label="Message">
                 <textarea
+                  name="message"
                   rows={4}
                   placeholder="Tell us about your trip…"
                   className="resize-none rounded-lg border border-border p-3 font-body-alt text-base tracking-[-0.04em] text-foreground placeholder:text-[#909dad] focus:outline-none"
@@ -106,11 +126,17 @@ export default function PackageEnquiry() {
                   I agree to the privacy policy.
                 </span>
               </label>
+              {isError && (
+                <p className="font-body-alt text-sm font-medium text-red-600">
+                  Something went wrong — please try again.
+                </p>
+              )}
               <button
                 type="submit"
-                className="self-start rounded-lg bg-foreground px-6 py-3 font-body-alt text-base font-medium tracking-[-0.03em] text-background transition-transform hover:scale-[1.02] active:scale-95"
+                disabled={isLoading}
+                className="self-start rounded-lg bg-foreground px-6 py-3 font-body-alt text-base font-medium tracking-[-0.03em] text-background transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-60"
               >
-                Send Enquiry
+                {isLoading ? "Sending…" : "Send Enquiry"}
               </button>
             </form>
           )}
