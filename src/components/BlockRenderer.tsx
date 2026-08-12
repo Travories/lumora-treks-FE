@@ -1,23 +1,51 @@
 import { blockRegistry } from "@/lib/block-registry";
-import type { CmsBlock } from "@/lib/blocks";
+import type { CmsBlock, CmsSectionSettings } from "@/lib/blocks";
+
+const BACKGROUND_CLASS: Record<CmsSectionSettings["background"], string> = {
+  default: "",
+  surface: "bg-surface",
+  dark: "bg-secondary",
+  primary: "bg-primary",
+};
 
 /**
  * Renders a Wagtail page body: an ordered list of `{ type, value, id }` blocks.
- * Each block's `type` selects a component from the registry; `value` is spread
- * as props. Unknown block types are skipped (logged in dev).
+ * `value.component` (not `type`) selects the React component from the
+ * registry; the rest of `value` (minus `component`/`settings`) is spread as
+ * props. `value.settings` (background/anchor/hidden — see backend
+ * `SectionSettingsBlock`) is applied as a thin wrapper so it doesn't disturb
+ * each section's own Figma-built spacing/width.
  */
 export default function BlockRenderer({ blocks }: { blocks: CmsBlock[] }) {
   return (
     <>
       {blocks.map((block) => {
-        const Component = blockRegistry[block.type];
+        const { component, settings, ...props } = block.value;
+
+        if (settings?.hidden) return null;
+
+        const Component = component ? blockRegistry[component] : undefined;
         if (!Component) {
           if (process.env.NODE_ENV !== "production") {
-            console.warn(`BlockRenderer: no component for block type "${block.type}"`);
+            console.warn(
+              `BlockRenderer: no component registered for "${component ?? block.type}"`
+            );
           }
           return null;
         }
-        return <Component key={block.id} {...block.value} />;
+
+        const bgClass = settings?.background ? BACKGROUND_CLASS[settings.background] : "";
+        const anchorId = settings?.anchor_id || undefined;
+
+        if (!bgClass && !anchorId) {
+          return <Component key={block.id} {...props} />;
+        }
+
+        return (
+          <div key={block.id} id={anchorId} className={bgClass || undefined}>
+            <Component {...props} />
+          </div>
+        );
       })}
     </>
   );

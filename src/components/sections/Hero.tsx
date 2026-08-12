@@ -15,8 +15,22 @@ import SearchBar from "@/components/ui/SearchBar";
  *
  * The foreground mountain cutout (transparent PNG) sits ABOVE the heading, so the
  * peaks visually overlap the text — matching the Figma layering.
+ *
+ * `heading`/`subheading`/search copy mirror the backend `HeroBlock`
+ * (apps/cms/blocks/sections.py). The background scene + mountain cutout are
+ * NOT wired to `slides` yet: the cutout is a bespoke pre-cropped PNG for this
+ * exact photo, not something derivable from an arbitrary CMS-uploaded image —
+ * swapping backgrounds needs a per-slide cutout asset or a different treatment.
  */
-export default function Hero() {
+export default function Hero({
+  heading = "Travel beyond destinations",
+  subheading = "Creating lifelong memories",
+  show_search = true,
+}: {
+  heading?: string;
+  subheading?: string;
+  show_search?: boolean;
+} = {}) {
   return (
     <section className="w-full p-5">
       <div className="relative aspect-[1400/790] min-h-[560px] w-full overflow-hidden rounded-[2rem]">
@@ -37,7 +51,7 @@ export default function Hero() {
           transition={{ duration: 5, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-x-0 top-[28%] z-10 px-6 text-center text-[clamp(2.5rem,8vw,100px)] font-extrabold leading-none tracking-[-0.06em] text-foreground"
         >
-          Travel beyond destinations
+          {heading}
         </motion.h1>
 
         {/* Foreground mountain cutout — in front of the heading */}
@@ -78,12 +92,12 @@ export default function Hero() {
           >
             <div className="flex items-end gap-2">
               <span className="text-[clamp(1.5rem,3vw,40px)] font-bold leading-none tracking-[-0.06em] text-white [text-shadow:0_2px_16px_rgb(0_0_0_/_45%)]">
-                Creating lifelong memories
+                {subheading}
               </span>
               <span className="mb-1 size-3 shrink-0 rounded-full bg-primary-accent" />
             </div>
 
-            <SearchBar />
+            {show_search && <SearchBar />}
           </motion.div>
 
           {/* destinations card */}

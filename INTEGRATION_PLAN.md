@@ -1,6 +1,6 @@
 # Lumora Treks — Integration Plan (CTAs · APIs · RTK Query · Wagtail)
 
-Plan for making the (currently presentational) frontend **functional**: wire interactions, move data behind RTK Query, define the API contract, and set up Wagtail block rendering. Companion to `BUILD_GUIDE.md`. The Figma build is done; this is the "connect the seams" phase.
+Plan for making the (currently presentational) frontend **functional**: wire interactions, move data behind RTK Query, define the API contract, and set up Wagtail block rendering. Companion to `BUILD_GUIDE.md`. The Figma build is done; this is the "conn0ect the seams" phase.
 
 ## Locked decisions (2026-08-11)
 1. **Plan against mocks.** Backend (Wagtail + Travories) not ready. Wire everything now on dummy data; define the contract we need; swap to real endpoints later — no component changes.

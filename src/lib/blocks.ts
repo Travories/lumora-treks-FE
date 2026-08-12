@@ -1,8 +1,50 @@
 /** Wagtail StreamField shapes. A page's `body` is an ordered list of blocks,
- * each `{ type, value, id }` (Wagtail API v2). */
+ * each `{ type, value, id }` (Wagtail API v2).
+ *
+ * `value.component` is the actual dispatch key (see backend
+ * `apps/core/blocks.py` `SectionBlock.get_api_representation` — every
+ * registered section echoes its React component name as `component`, PascalCase,
+ * alongside its fields). `value.settings` is the shared presentation controls
+ * every section carries (backend `SectionSettingsBlock`). `block.type` (the
+ * StreamField block name, e.g. `intro_stats`) is only used for CMS-editor UX
+ * and dev warnings — never for rendering dispatch. */
+export type CmsSectionSettings = {
+  anchor_id: string;
+  background: "default" | "surface" | "dark" | "primary";
+  spacing: "none" | "sm" | "md" | "lg";
+  container: "default" | "narrow" | "full";
+  hidden: boolean;
+};
+
+export type CmsBlockValue = {
+  component: string;
+  settings?: CmsSectionSettings;
+  [field: string]: unknown;
+};
+
+/** `serialize_image` (backend `apps/core/serializers.py`) — the shape every
+ * image chooser field serializes to. Sections only need `url`/`alt` so far;
+ * add fields here as needed rather than in each component. */
+export type CmsImage = {
+  id?: number;
+  url: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+} | null | undefined;
+
+/** `HeadingGroupBlock` (backend `apps/core/blocks.py`) — the eyebrow /
+ * heading / description trio most sections share. */
+export type CmsHeadingGroup = {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  align?: "center" | "left";
+};
+
 export type CmsBlock = {
   type: string;
-  value: Record<string, unknown>;
+  value: CmsBlockValue;
   id: string;
 };
 

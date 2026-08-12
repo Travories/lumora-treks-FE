@@ -4,18 +4,29 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import type { ReactNode } from "react";
+import { withHighlight } from "@/lib/highlightText";
+import type { CmsHeadingGroup, CmsImage } from "@/lib/blocks";
 
 /** Why Lumora Treks? — Figma node 83:919 (named "Stats Section"). Three service
- * blocks, the middle one dark, each with a rotated rounded image peeking out. */
+ * blocks, the middle one dark, each with a rotated rounded image peeking out.
+ *
+ * Props mirror the backend `WhyChooseUsBlock`/`WhyChooseUsCardBlock`
+ * (apps/cms/blocks/sections.py). The per-card word-level accents (e.g.
+ * "Curated **Destinations**") have no highlight field on the backend card
+ * block, so CMS-authored cards render plain heading/description text —
+ * only the untouched default copy below (when `cards` isn't passed at all)
+ * keeps the rich per-word styling. */
 
-type Block = {
-  blob: string;
-  dark?: boolean;
-  title: ReactNode;
-  desc: ReactNode;
+export type WhyChooseUsCard = {
+  theme?: "light" | "dark";
+  heading: string;
+  description?: string;
+  image?: CmsImage;
 };
 
-const BLOCKS: Block[] = [
+type DefaultBlock = { blob: string; dark?: boolean; title: ReactNode; desc: ReactNode };
+
+const DEFAULT_BLOCKS: DefaultBlock[] = [
   {
     blob: "/images/why-blob-1.png",
     title: (
@@ -73,58 +84,111 @@ const BLOCKS: Block[] = [
   },
 ];
 
-export default function WhyChooseUs() {
+const DEFAULT_HEADING: CmsHeadingGroup = {
+  heading: "Why Lumora Treks?",
+  description:
+    "We make every journey effortless, memorable, and uniquely yours. From carefully curated destinations to trusted local expertise, we're committed to delivering travel experiences that go beyond expectations.",
+};
+const DEFAULT_DESCRIPTION_HIGHLIGHT =
+  "we're committed to delivering travel experiences that go beyond expectations.";
+
+export default function WhyChooseUs({
+  heading = DEFAULT_HEADING,
+  description_highlight = DEFAULT_DESCRIPTION_HIGHLIGHT,
+  cards,
+}: {
+  heading?: CmsHeadingGroup;
+  description_highlight?: string;
+  cards?: WhyChooseUsCard[];
+} = {}) {
   return (
     <section className="px-6 py-16 lg:py-24">
       <div className="mx-auto flex max-w-[1240px] flex-col items-center gap-10">
         <div className="flex max-w-[1000px] flex-col items-center gap-5 text-center">
-          <h2 className="text-[clamp(1.75rem,3vw,32px)] font-bold tracking-[-0.04em] text-foreground">
-            Why Lumora Treks?
-          </h2>
-          <p className="font-body-alt text-[clamp(1.05rem,2vw,24px)] font-medium tracking-[-0.04em] text-text-secondary">
-            We make every journey effortless, memorable, and uniquely yours.
-            From carefully curated destinations to trusted local expertise,{" "}
-            <span className="italic text-[#909dad]">
-              we&apos;re committed to delivering travel experiences that go
-              beyond expectations.
-            </span>
-          </p>
+          {heading.heading && (
+            <h2 className="text-[clamp(1.75rem,3vw,32px)] font-bold tracking-[-0.04em] text-foreground">
+              {heading.heading}
+            </h2>
+          )}
+          {heading.description && (
+            <p className="font-body-alt text-[clamp(1.05rem,2vw,24px)] font-medium tracking-[-0.04em] text-text-secondary">
+              {withHighlight(heading.description, description_highlight, "italic text-[#909dad]")}
+            </p>
+          )}
         </div>
 
         <div className="grid w-full gap-8 md:grid-cols-3">
-          {BLOCKS.map((block, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
-              className={clsx(
-                "relative flex h-[362px] flex-col justify-center gap-10 overflow-hidden rounded-2xl px-10 py-14",
-                block.dark ? "bg-foreground" : "bg-background"
-              )}
-            >
-              <div className="absolute -right-10 -top-16 size-52 rotate-[39deg] overflow-hidden rounded-[95px] shadow-[-4px_4px_12px_0_rgba(18,136,67,0.12)]">
-                <Image src={block.blob} alt="" fill className="object-cover" />
-              </div>
-              <p
-                className={clsx(
-                  "relative text-2xl font-bold tracking-[-0.04em]",
-                  block.dark ? "text-background" : "text-foreground"
-                )}
-              >
-                {block.title}
-              </p>
-              <p
-                className={clsx(
-                  "relative font-body-alt text-base font-medium tracking-[-0.04em]",
-                  block.dark ? "text-[#ebffe8]" : "text-text-secondary"
-                )}
-              >
-                {block.desc}
-              </p>
-            </motion.div>
-          ))}
+          {cards
+            ? cards.map((card, i) => (
+                <motion.div
+                  key={card.heading}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
+                  className={clsx(
+                    "relative flex h-[362px] flex-col justify-center gap-10 overflow-hidden rounded-2xl px-10 py-14",
+                    card.theme === "dark" ? "bg-foreground" : "bg-background"
+                  )}
+                >
+                  {card.image?.url && (
+                    <div className="absolute -right-10 -top-16 size-52 rotate-[39deg] overflow-hidden rounded-[95px] shadow-[-4px_4px_12px_0_rgba(18,136,67,0.12)]">
+                      <Image src={card.image.url} alt="" fill className="object-cover" />
+                    </div>
+                  )}
+                  <p
+                    className={clsx(
+                      "relative text-2xl font-bold tracking-[-0.04em]",
+                      card.theme === "dark" ? "text-background" : "text-foreground"
+                    )}
+                  >
+                    {card.heading}
+                  </p>
+                  {card.description && (
+                    <p
+                      className={clsx(
+                        "relative font-body-alt text-base font-medium tracking-[-0.04em]",
+                        card.theme === "dark" ? "text-[#ebffe8]" : "text-text-secondary"
+                      )}
+                    >
+                      {card.description}
+                    </p>
+                  )}
+                </motion.div>
+              ))
+            : DEFAULT_BLOCKS.map((block, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
+                  className={clsx(
+                    "relative flex h-[362px] flex-col justify-center gap-10 overflow-hidden rounded-2xl px-10 py-14",
+                    block.dark ? "bg-foreground" : "bg-background"
+                  )}
+                >
+                  <div className="absolute -right-10 -top-16 size-52 rotate-[39deg] overflow-hidden rounded-[95px] shadow-[-4px_4px_12px_0_rgba(18,136,67,0.12)]">
+                    <Image src={block.blob} alt="" fill className="object-cover" />
+                  </div>
+                  <p
+                    className={clsx(
+                      "relative text-2xl font-bold tracking-[-0.04em]",
+                      block.dark ? "text-background" : "text-foreground"
+                    )}
+                  >
+                    {block.title}
+                  </p>
+                  <p
+                    className={clsx(
+                      "relative font-body-alt text-base font-medium tracking-[-0.04em]",
+                      block.dark ? "text-[#ebffe8]" : "text-text-secondary"
+                    )}
+                  >
+                    {block.desc}
+                  </p>
+                </motion.div>
+              ))}
         </div>
       </div>
     </section>

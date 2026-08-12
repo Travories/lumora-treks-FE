@@ -1,11 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { withHighlight } from "@/lib/highlightText";
 
 /** Intro + stats — Figma node 49:561 ("Content Section"). Static in Figma; a
- * subtle scroll-reveal is added here for polish. */
+ * subtle scroll-reveal is added here for polish.
+ *
+ * Props mirror the backend `IntroStatsBlock` (apps/cms/blocks/sections.py) so
+ * this renders unchanged whether called directly (landing page, all props
+ * default to the original Figma copy) or via `<BlockRenderer>` from real CMS
+ * data. */
 
-const STATS = [
+export type StatItem = { value: string; label: string; icon?: string };
+
+const DEFAULT_STATS: StatItem[] = [
   { value: "24K+", label: "Happy Travelers" },
   { value: "120", label: "Cured Destinations" },
   { value: "4.9", label: "Overall Ratings" },
@@ -17,7 +25,19 @@ const reveal = {
   viewport: { once: true, amount: 0.4 },
 };
 
-export default function IntroStats() {
+export default function IntroStats({
+  heading = "We've helped thousands of travelers discover unforgettable journeys across the world",
+  highlight = "unforgettable journeys",
+  description = "From iconic landmarks to hidden gems, we curate authentic travel experiences that inspire exploration, create lasting memories, and make every journey seamless from start to finish.",
+  description_highlight = "and make every journey seamless from start to finish.",
+  stats = DEFAULT_STATS,
+}: {
+  heading?: string;
+  highlight?: string;
+  description?: string;
+  description_highlight?: string;
+  stats?: StatItem[];
+} = {}) {
   return (
     <section className="px-6 py-16 md:py-20 lg:py-24">
       <div className="mx-auto flex max-w-[980px] flex-col items-center gap-10 text-center">
@@ -27,22 +47,14 @@ export default function IntroStats() {
           className="flex flex-col items-center gap-5"
         >
           <h2 className="text-[clamp(1.75rem,4vw,40px)] font-bold leading-tight tracking-[-0.04em] text-foreground">
-            We&apos;ve helped thousands of travelers
-            <br className="hidden md:block" />{" "}
-            discover{" "}
-            <span className="italic text-primary-accent">
-              unforgettable journeys
-            </span>{" "}
-            across the world
+            {withHighlight(heading, highlight, "italic text-primary-accent")}
           </h2>
 
-          <p className="max-w-[840px] font-body-alt text-[clamp(1.05rem,2.2vw,24px)] font-medium leading-snug tracking-[-0.04em] text-text-secondary">
-            From iconic landmarks to hidden gems, we curate authentic travel
-            experiences that inspire exploration, create lasting memories,{" "}
-            <span className="italic text-[#909dad]">
-              and make every journey seamless from start to finish.
-            </span>
-          </p>
+          {description && (
+            <p className="max-w-[840px] font-body-alt text-[clamp(1.05rem,2.2vw,24px)] font-medium leading-snug tracking-[-0.04em] text-text-secondary">
+              {withHighlight(description, description_highlight, "italic text-[#909dad]")}
+            </p>
+          )}
         </motion.div>
 
         <motion.div
@@ -50,7 +62,7 @@ export default function IntroStats() {
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
           className="flex flex-wrap items-start justify-center gap-x-20 gap-y-8"
         >
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1">
               <span className="text-[40px] font-bold leading-tight tracking-[-0.04em] text-foreground">
                 {stat.value}
