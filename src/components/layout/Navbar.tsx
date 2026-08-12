@@ -7,7 +7,8 @@ import { Icon } from "@iconify/react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { useUIStore } from "@/store/useUIStore";
-import { useGetSiteSettingsQuery } from "@/features/site/siteApi";
+import { useSiteSettingsQuery } from "@/features/site/siteQueries";
+
 
 /** Navbar — Figma node 69:873.
  *
@@ -31,7 +32,8 @@ export default function Navbar() {
   const isMobileNavOpen = useUIStore((s) => s.isMobileNavOpen);
   const toggleMobileNav = useUIStore((s) => s.toggleMobileNav);
   const closeMobileNav = useUIStore((s) => s.closeMobileNav);
-  const { data: site, isLoading } = useGetSiteSettingsQuery();
+  const { data: site, isLoading } = useSiteSettingsQuery();
+
 
   const siteName = site?.brand.site_name || "Lumora Treks";
   const navLinks =

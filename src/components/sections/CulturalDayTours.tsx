@@ -6,7 +6,7 @@ import CarouselNav from "@/components/ui/CarouselNav";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
-import { useGetCulturalToursQuery } from "@/features/packages/packagesApi";
+import { useCulturalToursQuery } from "@/features/packages/packageQueries";
 import type { PackageCardData } from "@/types";
 
 /** Cultural & Day Tours — Figma node 84:1278. Embla carousel of package cards. */
@@ -16,10 +16,13 @@ export default function CulturalDayTours({
 }: {
   initialItems?: PackageCardData[];
 }) {
-  const { data, isLoading, isError, refetch } = useGetCulturalToursQuery();
-  const tours = data ?? initialItems ?? [];
-  const loading = isLoading && !initialItems;
-  const errored = isError && !initialItems;
+  const { data, isLoading, isError, refetch } = useCulturalToursQuery();
+  const tours = data && data.length > 0 ? data : initialItems ?? [];
+  const loading = isLoading && !initialItems && !data;
+  const errored = isError && !initialItems && !data;
+
+
+
   const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
     loop: true,
   });

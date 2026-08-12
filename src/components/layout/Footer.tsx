@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
-import { useGetSiteSettingsQuery } from "@/features/site/siteApi";
+import { useSiteSettingsQuery } from "@/features/site/siteQueries";
 
 /** Footer — Figma node 73:464 ("Foreground Image"). Forest bg, logo + tagline +
  * socials (left), links (right), and a giant "Lumora Treks" watermark that rises
@@ -35,7 +35,8 @@ const DEFAULT_DESCRIPTION =
   "Your trusted travel partner in Nepal. We curate authentic experiences, breathtaking destinations, and unforgettable memories.";
 
 export default function Footer() {
-  const { data: site } = useGetSiteSettingsQuery();
+  const { data: site } = useSiteSettingsQuery();
+
 
   const siteName = site?.brand.site_name || "Lumora Treks";
   const description = site?.footer.description || DEFAULT_DESCRIPTION;

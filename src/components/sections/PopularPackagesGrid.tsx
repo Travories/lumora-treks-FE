@@ -9,7 +9,7 @@ import FilterTabs from "@/components/ui/FilterTabs";
 import Pagination from "@/components/ui/Pagination";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
-import { useGetPackagesQuery } from "@/features/packages/packagesApi";
+import { usePackagesQuery } from "@/features/packages/packageQueries";
 import type { PackageListResult } from "@/types";
 
 /** Popular Packages — Figma node 83:656. Header + filter tabs + card grid +
@@ -39,12 +39,13 @@ export default function PopularPackagesGrid({
     setPage(1);
   }
 
-  const { data, isLoading, isError, refetch } = useGetPackagesQuery({
+  const { data, isLoading, isError, refetch } = usePackagesQuery({
     category: searchLocation ? undefined : category,
     location: searchLocation,
     page,
     pageSize: PAGE_SIZE,
   });
+
   const result = data ?? initialData;
   const packages = result?.items ?? [];
   const totalPages = result?.totalPages ?? 1;

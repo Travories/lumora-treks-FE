@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import PackageCard from "@/components/ui/PackageCard";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
-import { useGetPopularPackagesQuery } from "@/features/packages/packagesApi";
+import { usePopularPackagesQuery } from "@/features/packages/packageQueries";
 import { adaptCmsPackage, type CmsPackage } from "@/lib/adaptCmsPackage";
 import type { CmsHeadingGroup } from "@/lib/blocks";
 
@@ -32,10 +32,9 @@ export default function PackageGrid({
   columns?: "2" | "3" | "4";
 } = {}) {
   const hasCmsPackages = !!resolved_packages?.length;
-  const { data, isLoading, isError, refetch } = useGetPopularPackagesQuery(undefined, {
-    skip: hasCmsPackages,
-  });
+  const { data, isLoading, isError, refetch } = usePopularPackagesQuery();
   const packages = hasCmsPackages ? resolved_packages!.map(adaptCmsPackage) : data ?? [];
+
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">

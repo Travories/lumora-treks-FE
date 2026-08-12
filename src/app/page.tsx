@@ -12,12 +12,20 @@ import FAQSection from "@/components/sections/FAQSection";
 import { POPULAR_PACKAGES } from "@/features/packages/packagesData";
 import BlockRenderer from "@/components/BlockRenderer";
 import { getPageByPath } from "@/lib/cms";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
+import { popularPackagesQueryOptions } from "@/features/packages/packageQueries";
 
 export default async function Home() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(popularPackagesQueryOptions());
   const page = await getPageByPath("/");
 
   return (
-    <>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex-1">
         {page?.body && page.body.length > 0 ? (
           <>
@@ -49,7 +57,8 @@ export default async function Home() {
         )}
       </main>
       <Footer />
-    </>
+    </HydrationBoundary>
   );
 }
+
 

@@ -1,34 +1,67 @@
-import { apiSlice } from "@/store/api/apiSlice";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { RegionHighlight, SeasonalDestination } from "@/types";
 
-const DUMMY_REGIONS: RegionHighlight[] = [
-  { id: "annapurna-region", title: "Annapurna Region", image: "/images/region-annapurna.png" },
-  { id: "bandipur", title: "Bandipur", image: "/images/region-bandipur.png" },
-  { id: "kathmandu", title: "Kathmandu", image: "/images/region-kathmandu.png" },
-  { id: "swayambhunath", title: "Swayubhunath", image: "/images/region-swayambhunath.png" },
-  { id: "rara-lake", title: "Rara Lake", image: "/images/region-rara-lake.png" },
-  { id: "everest-region", title: "Everest Region", image: "/images/region-everest.png" },
-];
+const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
 
-const DUMMY_SEASONAL_DESTINATIONS: SeasonalDestination[] = [
-  { id: "seasonal-1", title: "Journey to fish lake", image: "/images/seasonal-1.png", layout: "tall" },
-  { id: "seasonal-2", title: "Journey to fish lake", image: "/images/seasonal-2.png", layout: "tall" },
-  { id: "seasonal-3", title: "Journey to fish lake", image: "/images/seasonal-3.png", layout: "wide" },
-  { id: "seasonal-4", title: "Journey to fish lake", image: "/images/seasonal-4.png", layout: "tall" },
-  { id: "seasonal-5", title: "Journey to fish lake", image: "/images/seasonal-5.png", layout: "tall" },
-];
+export async function fetchRegionHighlights(): Promise<RegionHighlight[]> {
+  try {
+    const res = await fetch(`${WAGTAIL_URL}/api/v2/destinations/?featured=1&limit=6`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.items) {
+      return data.items.map((item: any) => ({
+        id: String(item.id),
+        title: item.title,
+        image: item.image?.url ?? "",
+      }));
+    }
+    return [];
+  } catch (err) {
+    console.error("Failed to fetch region highlights:", err);
+    return [];
+  }
+}
 
-export const galleryApi = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    getRegionHighlights: builder.query<RegionHighlight[], void>({
-      queryFn: () => ({ data: DUMMY_REGIONS }),
-      providesTags: ["GalleryItem"],
-    }),
-    getSeasonalDestinations: builder.query<SeasonalDestination[], void>({
-      queryFn: () => ({ data: DUMMY_SEASONAL_DESTINATIONS }),
-      providesTags: ["Destination"],
-    }),
-  }),
-});
+export const regionHighlightsQueryOptions = () =>
+  queryOptions({
+    queryKey: ["regionHighlights"],
+    queryFn: fetchRegionHighlights,
+  });
 
-export const { useGetRegionHighlightsQuery, useGetSeasonalDestinationsQuery } = galleryApi;
+export function useRegionHighlightsQuery() {
+  return useQuery(regionHighlightsQueryOptions());
+}
+
+export async function fetchSeasonalDestinations(): Promise<SeasonalDestination[]> {
+  try {
+    const res = await fetch(`${WAGTAIL_URL}/api/v2/destinations/?limit=6`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.items) {
+      return data.items.map((item: any) => ({
+        id: String(item.id),
+        title: item.title,
+        image: item.image?.url ?? "",
+        layout: item.default_layout ?? "tall",
+      }));
+    }
+    return [];
+  } catch (err) {
+    console.error("Failed to fetch seasonal destinations:", err);
+    return [];
+  }
+}
+
+export const seasonalDestinationsQueryOptions = () =>
+  queryOptions({
+    queryKey: ["seasonalDestinations"],
+    queryFn: fetchSeasonalDestinations,
+  });
+
+export function useSeasonalDestinationsQuery() {
+  return useQuery(seasonalDestinationsQueryOptions());
+}

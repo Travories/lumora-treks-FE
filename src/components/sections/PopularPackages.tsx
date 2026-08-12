@@ -6,7 +6,8 @@ import CarouselNav from "@/components/ui/CarouselNav";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
-import { useGetPopularPackagesQuery } from "@/features/packages/packagesApi";
+import { usePopularPackagesQuery } from "@/features/packages/packageQueries";
+
 import { adaptCmsPackage, type CmsPackage } from "@/lib/adaptCmsPackage";
 import type { CmsHeadingGroup } from "@/lib/blocks";
 import type { PackageCardData } from "@/types";
@@ -32,14 +33,13 @@ export default function PopularPackages({
   resolved_packages?: CmsPackage[];
 }) {
   const hasCmsPackages = !!resolved_packages?.length;
-  const { data, isLoading, isError, refetch } = useGetPopularPackagesQuery(undefined, {
-    skip: hasCmsPackages,
-  });
+  const { data, isLoading, isError, refetch } = usePopularPackagesQuery();
   const packages = hasCmsPackages
     ? resolved_packages!.map(adaptCmsPackage)
-    : data ?? initialItems ?? [];
-  const loading = !hasCmsPackages && isLoading && !initialItems;
-  const errored = !hasCmsPackages && isError && !initialItems;
+    : (data && data.length > 0) ? data : (initialItems ?? []);
+  const loading = !hasCmsPackages && isLoading && !initialItems && !data;
+  const errored = !hasCmsPackages && isError && !initialItems && !data;
+
   const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
     loop: true,
   });

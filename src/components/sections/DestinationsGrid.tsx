@@ -7,7 +7,7 @@ import FilterTabs from "@/components/ui/FilterTabs";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
-import { useGetDestinationsQuery } from "@/features/destinations/destinationsApi";
+import { useDestinationsQuery } from "@/features/destinations/destinationQueries";
 import type { DestinationCardData } from "@/types";
 
 /** Our Destinations — Figma node 84:1575. Filter tabs + Embla carousel of
@@ -18,10 +18,13 @@ export default function DestinationsGrid({
 }: {
   initialItems?: DestinationCardData[];
 }) {
-  const { data, isLoading, isError, refetch } = useGetDestinationsQuery();
-  const destinations = data ?? initialItems ?? [];
-  const loading = isLoading && !initialItems;
-  const errored = isError && !initialItems;
+  const { data, isLoading, isError, refetch } = useDestinationsQuery();
+  const destinations = data && data.length > 0 ? data : initialItems ?? [];
+  const loading = isLoading && !initialItems && !data;
+  const errored = isError && !initialItems && !data;
+
+
+
   const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
     loop: true,
   });

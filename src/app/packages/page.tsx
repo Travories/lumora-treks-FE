@@ -7,6 +7,15 @@ import CulturalDayTours from "@/components/sections/CulturalDayTours";
 import { selectPackages, CULTURAL_TOURS } from "@/features/packages/packagesData";
 import BlockRenderer from "@/components/BlockRenderer";
 import { getPageByPath } from "@/lib/cms";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
+import {
+  packagesListQueryOptions,
+  culturalToursQueryOptions,
+} from "@/features/packages/packageQueries";
 
 export default async function PackagesPage({
   searchParams,
@@ -14,19 +23,26 @@ export default async function PackagesPage({
   searchParams: Promise<{ location?: string; date?: string }>;
 }) {
   const { location } = await searchParams;
-  const page = await getPageByPath("/packages");
-
-  // Initial data for SSR — must match PopularPackagesGrid's initial state
-  // (default category "Trekking", page 1).
-  const initialGrid = selectPackages({
+  const queryParams = {
     category: location ? undefined : "Trekking",
     location,
     page: 1,
     pageSize: 6,
-  });
+  };
+
+  const queryClient = new QueryClient();
+  await Promise.all([
+    queryClient.prefetchQuery(packagesListQueryOptions(queryParams)),
+    queryClient.prefetchQuery(culturalToursQueryOptions()),
+  ]);
+
+  const page = await getPageByPath("/packages");
+
+  // Initial data for SSR — must match PopularPackagesGrid's initial state
+  const initialGrid = selectPackages(queryParams);
 
   return (
-    <>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex-1">
         <Navbar />
         {page?.body && page.body.length > 0 ? (
@@ -41,7 +57,8 @@ export default async function PackagesPage({
         )}
       </main>
       <Footer />
-    </>
+    </HydrationBoundary>
   );
 }
+
 
