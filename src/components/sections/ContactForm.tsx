@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useSubmitLeadMutation } from "@/features/leads/leadsApi";
@@ -32,6 +32,7 @@ const fieldBox =
   "flex items-center justify-between gap-2 rounded-lg border border-border bg-white p-3 text-base tracking-[-0.04em]";
 
 export default function ContactForm() {
+  const [formStartedAt] = useState(() => Date.now() / 1000);
   const [submitLead, { isLoading, isSuccess, isError }] = useSubmitLeadMutation();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -44,6 +45,8 @@ export default function ContactForm() {
       email: String(data.get("email") || ""),
       message: String(data.get("message") || ""),
       destination: String(data.get("destination") || ""),
+      consent: data.get("privacy_consent") === "yes",
+      form_started_at: Number(form.dataset.startedAt || formStartedAt),
       source_url: window.location.href,
     })
       .unwrap()
@@ -96,7 +99,8 @@ export default function ContactForm() {
         </motion.div>
 
         {/* Right — form */}
-        <motion.form
+          <motion.form
+          data-started-at={formStartedAt}
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
@@ -180,11 +184,13 @@ export default function ContactForm() {
               <label className="flex items-center gap-3">
                 <input
                   type="checkbox"
+                  name="privacy_consent"
+                  value="yes"
                   required
                   className="size-6 shrink-0 rounded border border-border accent-foreground"
                 />
                 <span className="text-base font-semibold tracking-[-0.04em] text-foreground">
-                  I agree to the privacy policy
+                  I agree to the <a href="/privacy" className="underline">privacy policy</a>
                 </span>
               </label>
               <button

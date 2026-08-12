@@ -28,6 +28,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export default function PackageEnquiry({ packageData }: { packageData?: CmsPackageDetail }) {
+  const [formStartedAt] = useState(() => Date.now() / 1000);
   const [sent, setSent] = useState(false);
   const [submitLead, { isLoading, isError }] = useSubmitLeadMutation();
 
@@ -43,6 +44,8 @@ export default function PackageEnquiry({ packageData }: { packageData?: CmsPacka
       travel_date: String(data.get("travel_date") || ""),
       travelers: String(data.get("travelers") || ""),
       package_id: packageData ? Number(packageData.id) : undefined,
+      consent: data.get("privacy_consent") === "yes",
+      form_started_at: Number(e.currentTarget.dataset.startedAt || formStartedAt),
       source_url: window.location.href,
     })
       .unwrap()
@@ -91,6 +94,7 @@ export default function PackageEnquiry({ packageData }: { packageData?: CmsPacka
           ) : (
             <form
               onSubmit={handleSubmit}
+              data-started-at={formStartedAt}
               className="flex flex-col gap-6 rounded-lg border border-border p-6"
             >
               <div className="grid gap-5 sm:grid-cols-2">
@@ -121,11 +125,13 @@ export default function PackageEnquiry({ packageData }: { packageData?: CmsPacka
               <label className="flex items-center gap-3">
                 <input
                   type="checkbox"
+                  name="privacy_consent"
+                  value="yes"
                   required
                   className="size-6 shrink-0 rounded border border-[#b2bbc6] accent-foreground"
                 />
                 <span className="font-body-alt text-base tracking-[-0.04em] text-[#3d4c5e]">
-                  I agree to the privacy policy.
+                  I agree to the <a href="/privacy" className="underline">privacy policy</a>.
                 </span>
               </label>
               {isError && (

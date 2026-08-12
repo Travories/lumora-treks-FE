@@ -70,21 +70,22 @@ export function VideoSection({ heading, media, aspect_ratio = "16/9", rounded = 
 }
 
 export function LeadForm({ heading, form_key = "enquiry", fields = [], submit_label = "Send enquiry", success_message = "Thanks! We'll get back to you shortly." }: { heading?: Heading; form_key?: string; fields?: Array<{ name: string; label: string; field_type: string; placeholder?: string; required?: boolean; options?: string[] }>; submit_label?: string; success_message?: string }) {
+  const [formStartedAt] = useState(() => Date.now() / 1000);
   const [submitLead, { isLoading, isSuccess, isError }] = useSubmitLeadMutation();
   const [error, setError] = useState(false);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(false);
     const form = new FormData(event.currentTarget);
-    const payload: SubmitLeadInput = { form_key, source_url: window.location.href };
+    const payload: SubmitLeadInput = { form_key, source_url: window.location.href, consent: form.get("privacy_consent") === "yes", form_started_at: Number(event.currentTarget.dataset.startedAt || formStartedAt) };
     fields.forEach((field) => { payload[field.name] = String(form.get(field.name) || ""); });
     try { await submitLead(payload).unwrap(); } catch { setError(true); }
   };
   return (
-    <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
+      <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
       {heading?.heading && <h2 className="mb-2 text-3xl font-bold text-foreground">{heading.heading}</h2>}
       {heading?.description && <p className="mb-8 text-text-secondary">{heading.description}</p>}
-      {isSuccess ? <p className="rounded-lg bg-primary/10 p-5 text-primary-active">{success_message}</p> : <form onSubmit={submit} className="grid gap-5 rounded-2xl border border-border bg-surface p-6">{fields.map((field) => field.field_type === "textarea" ? <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<textarea name={field.name} required={field.required} placeholder={field.placeholder} rows={4} className="rounded-lg border border-border p-3" /></label> : field.field_type === "select" ? <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<select name={field.name} required={field.required} className="rounded-lg border border-border p-3"><option value="">Select…</option>{field.options?.map((option) => <option key={option}>{option}</option>)}</select></label> : <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<input name={field.name} type={field.field_type} required={field.required} placeholder={field.placeholder} className="rounded-lg border border-border p-3" /></label>)}{(isError || error) && <p className="text-sm text-red-600">Something went wrong. Please try again.</p>}<button type="submit" disabled={isLoading} className="rounded-lg bg-foreground px-5 py-3 font-medium text-background disabled:opacity-60">{isLoading ? "Sending…" : submit_label}</button></form>}
+      {isSuccess ? <p className="rounded-lg bg-primary/10 p-5 text-primary-active">{success_message}</p> : <form onSubmit={submit} data-started-at={formStartedAt} className="grid gap-5 rounded-2xl border border-border bg-surface p-6">{fields.map((field) => field.field_type === "textarea" ? <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<textarea name={field.name} required={field.required} placeholder={field.placeholder} rows={4} className="rounded-lg border border-border p-3" /></label> : field.field_type === "select" ? <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<select name={field.name} required={field.required} className="rounded-lg border border-border p-3"><option value="">Select…</option>{field.options?.map((option) => <option key={option}>{option}</option>)}</select></label> : <label key={field.name} className="grid gap-2 text-sm font-medium text-foreground">{field.label}<input name={field.name} type={field.field_type} required={field.required} placeholder={field.placeholder} className="rounded-lg border border-border p-3" /></label>)}<label className="flex items-center gap-3 text-sm text-text-secondary"><input type="checkbox" name="privacy_consent" value="yes" required />I agree to the <a href="/privacy" className="underline">privacy policy</a>.</label>{(isError || error) && <p className="text-sm text-red-600">Something went wrong. Please try again.</p>}<button type="submit" disabled={isLoading} className="rounded-lg bg-foreground px-5 py-3 font-medium text-background disabled:opacity-60">{isLoading ? "Sending…" : submit_label}</button></form>}
     </section>
   );
 }

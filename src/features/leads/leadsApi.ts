@@ -16,6 +16,8 @@ export type SubmitLeadInput = {
   source_url?: string;
   page_id?: number;
   package_id?: number;
+  consent: boolean;
+  form_started_at?: number;
   [extraField: string]: unknown;
 };
 
