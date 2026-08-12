@@ -18,7 +18,7 @@ import { useSiteSettingsQuery } from "@/features/site/siteQueries";
  * headings dropped, matching the current single-column layout. */
 
 export default function Footer() {
-  const { data: site, isLoading } = useSiteSettingsQuery();
+  const { data: site } = useSiteSettingsQuery();
 
   const siteName = site?.brand.site_name || "Lumora Treks";
   const description = site?.footer?.description || "";

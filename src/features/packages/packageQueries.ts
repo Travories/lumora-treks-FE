@@ -2,7 +2,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { PackageCardData, PackageListResult } from "@/types";
 import { adaptCmsPackage, type CmsPackage } from "@/lib/adaptCmsPackage";
 import type { CmsListResponse } from "@/lib/blocks";
-import { CULTURAL_TOURS, type SelectPackagesParams } from "./packagesData";
+import type { SelectPackagesParams } from "./packagesData";
 
 const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
 

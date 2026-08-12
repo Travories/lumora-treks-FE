@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PackagesHero from "@/components/sections/PackagesHero";
@@ -15,6 +16,16 @@ import {
   packagesListQueryOptions,
   culturalToursQueryOptions,
 } from "@/features/packages/packageQueries";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageByPath("/packages");
+  return {
+    title: page?.seo?.title || page?.title || "Packages | Lumora Treks",
+    description: page?.seo?.description,
+    ...(page?.seo?.canonical_url ? { alternates: { canonical: page.seo.canonical_url } } : {}),
+    ...(page?.seo?.noindex ? { robots: { index: false, follow: false } } : {}),
+  };
+}
 
 export default async function PackagesPage({
   searchParams,

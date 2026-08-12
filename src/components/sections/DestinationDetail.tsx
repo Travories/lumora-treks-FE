@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import StarRating from "@/components/ui/StarRating";
 import ReviewCard, { type Review } from "@/components/ui/ReviewCard";
+import type { CmsDestinationDetail } from "@/lib/blocks";
 
 /** DestinationDetail — Figma node 141:3123 ("Main Content").
  * Breadcrumb → header → overview + gallery → hours + booking card → reviews.
@@ -82,10 +83,16 @@ const fadeUp = {
 export default function DestinationDetail({
   ctaHref = "/packages",
   ctaLabel = "Explore Packages",
+  destination,
 }: {
   ctaHref?: string;
   ctaLabel?: string;
+  destination?: CmsDestinationDetail;
 } = {}) {
+  const title = destination?.title || "Kathmandu Durbar Square";
+  const overview = destination?.description || destination?.subtitle ||
+    "Lumbini, located in Nepal, holds profound significance as a UNESCO World Heritage Site.";
+  const destinationImage = destination?.image?.src || destination?.image?.url;
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 pt-6 sm:px-12 lg:px-20">
       {/* Breadcrumb + Header */}
@@ -99,14 +106,14 @@ export default function DestinationDetail({
           </Link>
           <Icon icon="iconoir:nav-arrow-right" className="size-4 text-text-secondary" />
           <span className="font-body-alt tracking-[-0.02em] text-[#2bbf0f] underline">
-            Kathmandu Durbar Square
+            {title}
           </span>
         </nav>
 
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h1 className="text-[28px] font-bold tracking-[-0.04em] text-foreground">
-              Kathmandu Durbar Square
+              {title}
             </h1>
           </div>
           <div className="flex items-center justify-between">
@@ -148,12 +155,7 @@ export default function DestinationDetail({
             </h2>
             <div className="flex flex-col gap-3 text-lg">
               <p className="font-body-alt leading-[26px] tracking-[-0.02em] text-text-secondary">
-                Lumbini, located in Nepal, holds profound significance as a
-                UNESCO World Heritage Site. It is revered worldwide as the
-                birthplace of Siddhartha Gautama, the historical Buddha. This
-                sacred pilgrimage site attracts Buddhists and visitors from
-                around the globe, drawn by its tranquil ambiance and historical
-                resonance.
+                {overview}
               </p>
               <button
                 type="button"
@@ -179,7 +181,7 @@ export default function DestinationDetail({
         {/* Gallery */}
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex h-[335px] gap-2">
-            <GalleryImg src={GALLERY[0]} className="flex-1" priority />
+            <GalleryImg src={destinationImage || GALLERY[0]} className="flex-1" priority />
             <div className="flex flex-1 flex-col gap-2">
               <GalleryImg src={GALLERY[1]} className="flex-1" />
               <GalleryImg src={GALLERY[2]} className="flex-1" />
@@ -212,13 +214,17 @@ export default function DestinationDetail({
         <motion.div {...fadeUp} className="flex flex-1 flex-col gap-4 pb-6">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold tracking-[-0.04em] text-foreground">
-              Hours
+              {destination ? "Travel details" : "Hours"}
             </h2>
-            <span className="rounded bg-background px-2.5 py-2 font-body-alt text-sm font-medium tracking-[-0.02em] text-[#44a33c]">
-              Open Now
-            </span>
+            {!destination && <span className="rounded bg-background px-2.5 py-2 font-body-alt text-sm font-medium tracking-[-0.02em] text-[#44a33c]">Open Now</span>}
           </div>
-          <dl className="flex gap-[60px] font-body-alt text-lg capitalize tracking-[-0.04em] text-text-secondary">
+          {destination ? (
+            <div className="grid gap-3 font-body-alt text-lg tracking-[-0.04em] text-text-secondary">
+              <p><strong className="text-foreground">Region:</strong> {destination.region || "—"}</p>
+              <p><strong className="text-foreground">Best season:</strong> {destination.best_season || "Contact us for seasonal advice."}</p>
+              <p><strong className="text-foreground">Packages:</strong> {destination.packages.length}</p>
+            </div>
+          ) : <dl className="flex gap-[60px] font-body-alt text-lg capitalize tracking-[-0.04em] text-text-secondary">
             <div className="flex flex-col gap-4">
               {HOURS.map((h) => (
                 <dt key={h.day}>{h.day}</dt>
@@ -229,7 +235,7 @@ export default function DestinationDetail({
                 <dd key={h.day}>{h.time}</dd>
               ))}
             </div>
-          </dl>
+          </dl>}
         </motion.div>
 
         {/* Booking card */}
@@ -245,10 +251,10 @@ export default function DestinationDetail({
             </div>
             <div className="flex items-start justify-between border-b border-border pb-2 font-body-alt text-base tracking-[-0.03em] text-text-secondary">
               <span>Location</span>
-              <span className="text-right">Basantpur, Kathmandu</span>
+              <span className="text-right">{destination?.region || "Basantpur, Kathmandu"}</span>
             </div>
             <div className="flex flex-col gap-1 border-b border-border pb-2">
-              {AMENITIES.map((amenity) => (
+              {(destination ? [`${destination.packages.length} active package${destination.packages.length === 1 ? "" : "s"} available`] : AMENITIES).map((amenity) => (
                 <div key={amenity} className="flex items-center gap-1.5">
                   <Icon
                     icon="charm:tick"
@@ -270,8 +276,8 @@ export default function DestinationDetail({
         </motion.aside>
       </section>
 
-      {/* Reviews & Ratings */}
-      <section className="flex flex-col gap-6 pb-6">
+      {/* Reviews & Ratings (demo-only fallback until destination reviews exist in the API) */}
+      {!destination && <section className="flex flex-col gap-6 pb-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-[-0.04em] text-foreground">
             Reviews &amp; Ratings
@@ -339,7 +345,7 @@ export default function DestinationDetail({
             ))}
           </div>
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

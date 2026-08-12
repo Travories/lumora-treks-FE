@@ -7,7 +7,46 @@ import { motion } from "framer-motion";
 
 /** Payment success — Figma node 118:4814 ("transaction successful"). Success
  * state + booking summary card. Presentational. */
-export default function PaymentSuccess() {
+export default function PaymentSuccess({ verified = false, simulation = false, amount }: { verified?: boolean; simulation?: boolean; amount?: string }) {
+  if (simulation) {
+    return (
+      <section className="mx-auto flex min-h-[55vh] max-w-2xl flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+        <div className="flex size-20 items-center justify-center rounded-full bg-primary/15">
+          <Icon icon="charm:circle-tick" className="size-12 text-primary-active" />
+        </div>
+        <p className="rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold uppercase tracking-[0.15em] text-amber-900">
+          Simulation only
+        </p>
+        <h1 className="font-body-alt text-3xl font-semibold text-foreground">Demo payment completed</h1>
+        <p className="font-body-alt text-lg text-text-secondary">
+          This simulated {amount ? `$${amount}` : "payment"} did not contact a provider, collect card data, or charge money.
+        </p>
+        <Link href="/packages" className="rounded-lg bg-foreground px-5 py-3 font-medium text-background">
+          Return to packages
+        </Link>
+      </section>
+    );
+  }
+
+  if (!verified) {
+    return (
+      <section className="mx-auto flex min-h-[55vh] max-w-2xl flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+        <div className="flex size-20 items-center justify-center rounded-full bg-amber-100">
+          <Icon icon="iconoir:warning-circle" className="size-12 text-amber-700" />
+        </div>
+        <h1 className="font-body-alt text-3xl font-semibold text-foreground">
+          Payment confirmation is unavailable
+        </h1>
+        <p className="font-body-alt text-lg text-text-secondary">
+          No verified payment was found for this page. Online payment will be available once the booking provider is connected.
+        </p>
+        <Link href="/enquiry" className="rounded-lg bg-foreground px-5 py-3 font-medium text-background">
+          Send an enquiry instead
+        </Link>
+      </section>
+    );
+  }
+
   return (
     <section className="mx-auto max-w-[1440px] px-6 py-12 lg:px-20">
       <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-between lg:gap-8">

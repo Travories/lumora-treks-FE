@@ -20,20 +20,24 @@ const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL;
 export async function getPageByPath(path: string): Promise<CmsPage | null> {
   if (!WAGTAIL_URL) return null;
 
-  const res = await fetch(
-    `${WAGTAIL_URL}/api/v2/page-by-path/?path=${encodeURIComponent(path)}`,
-    { next: { revalidate: 60 } }
-  );
-  if (!res.ok) return null;
+  try {
+    const res = await fetch(
+      `${WAGTAIL_URL}/api/v2/page-by-path/?path=${encodeURIComponent(path)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!res.ok) return null;
 
-  const data = await res.json();
-  return {
-    id: data.id,
-    title: data.title,
-    slug: data.meta?.slug ?? "",
-    body: data.body ?? [],
-    seo: data.seo,
-  };
+    const data = await res.json();
+    return {
+      id: data.id,
+      title: data.title,
+      slug: data.meta?.slug ?? "",
+      body: data.body ?? [],
+      seo: data.seo,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** Fetch a CMS page by slug (used by the `/cms/[slug]` demo route).
@@ -48,27 +52,31 @@ export async function getPageByPath(path: string): Promise<CmsPage | null> {
 export async function getPage(slug: string): Promise<CmsPage | null> {
   if (!WAGTAIL_URL) return null;
 
-  const listRes = await fetch(
-    `${WAGTAIL_URL}/api/v2/pages/?slug=${encodeURIComponent(slug)}`,
-    { next: { revalidate: 60 } }
-  );
-  if (!listRes.ok) return null;
+  try {
+    const listRes = await fetch(
+      `${WAGTAIL_URL}/api/v2/pages/?slug=${encodeURIComponent(slug)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!listRes.ok) return null;
 
-  const { items } = await listRes.json();
-  const found = items?.[0];
-  if (!found) return null;
+    const { items } = await listRes.json();
+    const found = items?.[0];
+    if (!found) return null;
 
-  const detailRes = await fetch(`${WAGTAIL_URL}/api/v2/pages/${found.id}/`, {
-    next: { revalidate: 60 },
-  });
-  if (!detailRes.ok) return null;
+    const detailRes = await fetch(`${WAGTAIL_URL}/api/v2/pages/${found.id}/`, {
+      next: { revalidate: 60 },
+    });
+    if (!detailRes.ok) return null;
 
-  const page = await detailRes.json();
-  return {
-    id: page.id,
-    title: page.title,
-    slug: page.meta?.slug ?? slug,
-    body: page.body ?? [],
-    seo: page.seo,
-  };
+    const page = await detailRes.json();
+    return {
+      id: page.id,
+      title: page.title,
+      slug: page.meta?.slug ?? slug,
+      body: page.body ?? [],
+      seo: page.seo,
+    };
+  } catch {
+    return null;
+  }
 }

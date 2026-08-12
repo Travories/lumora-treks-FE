@@ -9,6 +9,19 @@ import DestinationsBento from "@/components/sections/DestinationsBento";
 import AuthenticExperiences from "@/components/sections/AuthenticExperiences";
 import CTABand from "@/components/sections/CTABand";
 import FAQSection from "@/components/sections/FAQSection";
+import {
+  EmbedSection,
+  FeaturesList,
+  Gallery,
+  HeaderCard,
+  LeadForm,
+  RichTextSection,
+  Spacer,
+  StatsSection,
+  Testimonial,
+  TestimonialsCarousel,
+  VideoSection,
+} from "@/components/sections/CmsSimpleBlocks";
 
 /**
  * Maps a Wagtail block's `component` (`block.value.component` — PascalCase,
@@ -16,11 +29,8 @@ import FAQSection from "@/components/sections/FAQSection";
  * to its React section component. `<BlockRenderer>` looks up this map and
  * spreads the rest of `block.value` as props.
  *
- * NOT every backend block has a frontend match yet — these still need a
- * component built (unregistered here; BlockRenderer skips them with a dev
- * warning rather than crashing): HeaderCard, FeaturesList, Testimonial,
- * TestimonialsCarousel, StatsSection, RichTextSection, Gallery, VideoSection,
- * LeadForm, Spacer, EmbedSection.
+ * Every backend section currently has a frontend registration. Keep this map
+ * aligned with the backend `COMPONENT_MAP` contract.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const blockRegistry: Record<string, ComponentType<any>> = {
@@ -34,4 +44,15 @@ export const blockRegistry: Record<string, ComponentType<any>> = {
   AuthenticExperiences: AuthenticExperiences,
   CTABanner: CTABand,
   FAQSection: FAQSection,
+  RichTextSection,
+  Gallery,
+  VideoSection,
+  EmbedSection,
+  LeadForm,
+  Spacer,
+  HeaderCard,
+  FeaturesList,
+  Testimonial,
+  TestimonialsCarousel,
+  StatsSection,
 };

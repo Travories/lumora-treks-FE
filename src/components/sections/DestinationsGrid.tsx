@@ -73,7 +73,7 @@ export default function DestinationsGrid({
                     image={dest.image}
                     title={dest.title}
                     price={dest.price}
-                    href={`/destinations/${dest.id}`}
+                    href={dest.href || `/destinations/${dest.slug || dest.id}`}
                   />
                 </div>
               ))}

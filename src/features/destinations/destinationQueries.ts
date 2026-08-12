@@ -1,8 +1,18 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { CmsImage } from "@/lib/blocks";
 import type { DestinationCardData } from "@/types";
 
 
 const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
+
+type CmsDestination = {
+  id: number | string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  image?: CmsImage;
+  href?: string;
+};
 
 export async function fetchDestinations(): Promise<DestinationCardData[]> {
   try {
@@ -10,19 +20,15 @@ export async function fetchDestinations(): Promise<DestinationCardData[]> {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data: { items?: CmsDestination[] } = await res.json();
     if (data.items && data.items.length > 0) {
-      return data.items.map((item: any) => ({
+      return data.items.map((item) => ({
         id: String(item.id),
-        slug: item.meta?.slug ?? "",
+        slug: item.slug,
         title: item.title,
         subtitle: item.subtitle ?? "",
-        image: item.image?.url ?? "",
-        imageAlt: item.image?.alt_text ?? item.title,
-        badge: item.badge ?? "",
-        packagesCount: item.packages_count ?? 0,
-        layout: item.layout ?? "small",
-        featured: item.featured ?? false,
+        image: item.image?.src ?? item.image?.url ?? "/images/destination-card-default.png",
+        href: item.href ?? `/destinations/${item.slug}`,
       }));
     }
     return [];

@@ -6,6 +6,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import StarRating from "@/components/ui/StarRating";
 import { useSubmitLeadMutation } from "@/features/leads/leadsApi";
+import type { CmsPackageDetail } from "@/lib/blocks";
 
 /** Package enquiry — reached from a package detail page. A no-payment enquiry
  * form + package summary. Submits to `/api/v2/leads/` (`form_key: "enquiry"`);
@@ -26,7 +27,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export default function PackageEnquiry() {
+export default function PackageEnquiry({ packageData }: { packageData?: CmsPackageDetail }) {
   const [sent, setSent] = useState(false);
   const [submitLead, { isLoading, isError }] = useSubmitLeadMutation();
 
@@ -41,6 +42,7 @@ export default function PackageEnquiry() {
       message: String(data.get("message") || ""),
       travel_date: String(data.get("travel_date") || ""),
       travelers: String(data.get("travelers") || ""),
+      package_id: packageData ? Number(packageData.id) : undefined,
       source_url: window.location.href,
     })
       .unwrap()
@@ -147,8 +149,8 @@ export default function PackageEnquiry() {
           <div className="flex items-center gap-4 border-b border-border pb-4">
             <div className="relative size-[100px] shrink-0 overflow-hidden rounded-lg">
               <Image
-                src="/images/checkout-thumb.png"
-                alt="UNESCO Heritage Site & Lumbini Sightseeing"
+                src={packageData?.image?.src || packageData?.image?.url || "/images/checkout-thumb.png"}
+                alt={packageData?.title || "Selected package"}
                 fill
                 sizes="100px"
                 className="object-cover"
@@ -156,14 +158,14 @@ export default function PackageEnquiry() {
             </div>
             <div className="flex flex-1 flex-col gap-2">
               <p className="font-body-alt text-lg font-medium tracking-[-0.04em] text-foreground">
-                UNESCO Heritage Site &amp; Lumbini Sightseeing
+                {packageData?.title || "Select a package from the packages page"}
               </p>
               <div className="flex items-center gap-2">
                 <span className="font-body-alt text-base tracking-[-0.04em] text-text-secondary">
-                  4 Days
+                  {packageData?.duration || "Package details"}
                 </span>
                 <span className="size-1 rounded-full bg-text-secondary" />
-                <StarRating rating={4} starSize={20} />
+                  <StarRating rating={packageData?.rating ?? 4} starSize={20} />
               </div>
             </div>
           </div>
@@ -172,7 +174,7 @@ export default function PackageEnquiry() {
               Starting from
             </span>
             <span className="font-body-alt text-xl font-medium tracking-[-0.04em] text-foreground">
-              $400
+              {packageData ? `${packageData.currency} ${packageData.price}` : "Quote on request"}
             </span>
           </div>
           <p className="mt-3 font-body-alt text-sm tracking-[-0.03em] text-[#909dad]">

@@ -19,6 +19,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: page.seo?.title ?? page.title,
     description: page.seo?.description,
+    ...(page.seo?.canonical_url
+      ? { alternates: { canonical: page.seo.canonical_url } }
+      : {}),
+    ...(page.seo?.noindex ? { robots: { index: false, follow: false } } : {}),
+    ...(page.seo?.og_image?.url
+      ? { openGraph: { images: [{ url: page.seo.og_image.url, alt: page.title }] } }
+      : {}),
   };
 }
 

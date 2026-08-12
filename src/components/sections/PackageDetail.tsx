@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import StarRating from "@/components/ui/StarRating";
 import ReviewCard, { type Review } from "@/components/ui/ReviewCard";
+import type { CmsPackageDetail } from "@/lib/blocks";
 
 /** Package detail — Figma node 150:10819 ("Main Content"). Distinct from the
  * destination detail: overview + key facts, gallery, things included, booking
@@ -13,12 +14,6 @@ import ReviewCard, { type Review } from "@/components/ui/ReviewCard";
 
 const GALLERY_LARGE = ["/images/kds-1.png", "/images/kds-2.png"];
 const GALLERY_SMALL = ["/images/kds-3.png", "/images/kds-4.png", "/images/kds-5.png"];
-
-const KEY_FACTS = [
-  { icon: "bi:suitcase", label: "Trip Style", value: "Sightseeing" },
-  { icon: "lets-icons:speed", label: "Difficulty", value: "Easy" },
-  { icon: "lucide:calendar", label: "Number of days", value: "4 Days & 3 Nights" },
-];
 
 const DAYS = ["Day 1", "Day 2", "Day 3"];
 
@@ -53,10 +48,36 @@ const sectionHeading =
 
 export default function PackageDetail({
   reserveHref = "/checkout",
+  packageData,
 }: {
   reserveHref?: string;
+  packageData?: CmsPackageDetail;
 } = {}) {
   const [day, setDay] = useState(0);
+  const title = packageData?.title || "Kathmandu Durbar Square";
+  const rating = packageData?.rating ?? 4;
+  const reviewCount = packageData?.review_count ?? 13;
+  const overview = packageData?.summary || packageData?.description ||
+    "Lumbini, located in Nepal, holds profound significance as a UNESCO World Heritage Site.";
+  const keyFacts = [
+    { icon: "bi:suitcase", label: "Trip Style", value: packageData?.category || "Sightseeing" },
+    { icon: "lets-icons:speed", label: "Difficulty", value: packageData?.difficulty || "Easy" },
+    { icon: "lucide:calendar", label: "Number of days", value: packageData?.duration || "4 Days & 3 Nights" },
+  ];
+  const gallery = packageData?.gallery?.map((item) => item.image?.src || item.image?.url).filter(Boolean) as string[] | undefined;
+  const galleryLarge = gallery?.slice(0, 2).length ? gallery.slice(0, 2) : GALLERY_LARGE;
+  const gallerySmall = gallery?.slice(2, 5).length ? gallery.slice(2, 5) : GALLERY_SMALL;
+  const itinerary = packageData?.itinerary?.length ? packageData.itinerary : null;
+  const dayLabels = itinerary?.map((item) => item.day_label) || DAYS;
+  const reviews = packageData
+    ? packageData.testimonials.map((item) => ({
+        name: item.author_name,
+        avatar: item.avatar?.src || item.avatar?.url || "/images/avatar-1.png",
+        timeAgo: "",
+        rating: item.rating,
+        text: item.quote,
+      }))
+    : REVIEWS;
   const maxCount = Math.max(...BREAKDOWN.map((b) => b.count), 1);
 
   return (
@@ -67,23 +88,23 @@ export default function PackageDetail({
           <Link href="/destinations">Destinations</Link>
           <Icon icon="iconoir:nav-arrow-right" className="size-4" />
           <span className="font-medium text-[#2bbf0f] underline">
-            Kathmandu Durbar Square
+            {title}
           </span>
         </nav>
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-[28px] font-bold tracking-[-0.04em] text-foreground">
-            Kathmandu Durbar Square
+            {title}
           </h1>
           <button type="button" aria-label="Share" className="text-foreground">
             <Icon icon="iconoir:share-android" className="size-7" />
           </button>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-medium text-text-secondary">4.0</span>
-          <StarRating rating={4} starSize={20} />
+          <span className="font-medium text-text-secondary">{rating.toFixed(1)}</span>
+          <StarRating rating={rating} starSize={20} />
           <span className="size-1 rounded-full bg-text-secondary" />
           <button type="button" className="text-lg text-text-secondary underline">
-            (13 Reviews)
+            ({reviewCount} Reviews)
           </button>
         </div>
       </div>
@@ -93,13 +114,7 @@ export default function PackageDetail({
         <div className="flex flex-col gap-6 lg:w-[644px]">
           <div className="flex flex-col gap-5 border-b border-border pb-6">
             <h2 className={sectionHeading}>Overview</h2>
-            <p className="font-body-alt text-lg leading-[1.6] tracking-[-0.02em] text-text-secondary">
-              Lumbini, located in Nepal, holds profound significance as a UNESCO
-              World Heritage Site. It is revered worldwide as the birthplace of
-              Siddhartha Gautama, the historical Buddha. This sacred pilgrimage
-              site attracts Buddhists and visitors from around the globe, drawn
-              by its tranquil ambiance and historical resonance.
-            </p>
+            <p className="font-body-alt text-lg leading-[1.6] tracking-[-0.02em] text-text-secondary">{overview}</p>
             <button type="button" className="w-fit font-semibold tracking-[-0.03em] text-foreground underline">
               See More
             </button>
@@ -108,7 +123,7 @@ export default function PackageDetail({
             <h2 className={sectionHeading}>Key Facts</h2>
             <div className="flex gap-12">
               <div className="flex flex-col gap-4">
-                {KEY_FACTS.map((f) => (
+                {keyFacts.map((f) => (
                   <div key={f.label} className="flex items-center gap-2">
                     <Icon icon={f.icon} className="size-5 text-text-secondary" />
                     <span className="font-body-alt text-lg capitalize tracking-[-0.02em] text-text-secondary">
@@ -118,7 +133,7 @@ export default function PackageDetail({
                 ))}
               </div>
               <div className="flex flex-col gap-4">
-                {KEY_FACTS.map((f) => (
+                {keyFacts.map((f) => (
                   <span
                     key={f.label}
                     className="font-body-alt text-lg capitalize tracking-[-0.04em] text-foreground"
@@ -134,17 +149,17 @@ export default function PackageDetail({
         {/* Gallery */}
         <div className="flex flex-1 flex-col gap-2">
           <div className="grid h-[335px] grid-cols-2 gap-2">
-            {GALLERY_LARGE.map((src, i) => (
+            {galleryLarge.map((src, i) => (
               <div key={src} className="relative overflow-hidden rounded-lg">
                 <Image src={src} alt="" fill sizes="320px" className="object-cover" priority={i === 0} />
               </div>
             ))}
           </div>
           <div className="grid h-[125px] grid-cols-3 gap-4">
-            {GALLERY_SMALL.map((src, i) => (
+            {gallerySmall.map((src, i) => (
               <div key={src} className="relative overflow-hidden rounded-lg">
                 <Image src={src} alt="" fill sizes="200px" className="object-cover" />
-                {i === GALLERY_SMALL.length - 1 && (
+                {i === gallerySmall.length - 1 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                     <span className="font-body-alt text-2xl tracking-[-0.02em] text-white">
                       + 10 Photos
@@ -194,7 +209,7 @@ export default function PackageDetail({
             <span className="font-body-alt text-base tracking-[-0.03em] text-text-secondary">
               Price per adult
             </span>
-            <span className="font-body-alt text-xl tracking-[-0.03em] text-foreground">$400</span>
+              <span className="font-body-alt text-xl tracking-[-0.03em] text-foreground">{packageData ? `${packageData.currency} ${packageData.price}` : "$400"}</span>
           </div>
           <div className="flex flex-col gap-5">
             <div className="flex gap-2">
@@ -216,7 +231,7 @@ export default function PackageDetail({
             <div className="flex items-center justify-between gap-2 rounded-lg border border-[#2bbf0f] p-4">
               <span className="flex items-center gap-2 text-foreground">
                 <span className="font-body-alt text-sm tracking-[-0.04em]">Total</span>
-                <span className="text-lg font-semibold tracking-[-0.04em]">$500</span>
+                <span className="text-lg font-semibold tracking-[-0.04em]">{packageData ? `${packageData.currency} ${packageData.price}` : "$500"}</span>
               </span>
               <span className="font-body-alt text-sm tracking-[-0.04em] text-text-secondary">2 adults X $250</span>
             </div>
@@ -240,7 +255,7 @@ export default function PackageDetail({
         <div className="flex flex-1 flex-col gap-6">
           <h2 className={sectionHeading}>Itinerary</h2>
           <div className="flex gap-2">
-            {DAYS.map((d, i) => (
+            {dayLabels.map((d, i) => (
               <button
                 key={d}
                 type="button"
@@ -258,7 +273,7 @@ export default function PackageDetail({
           <div className="flex flex-col gap-5 rounded-lg border border-border p-6">
             <div className="flex items-start justify-between gap-4">
               <p className="font-body-alt text-xl tracking-[-0.04em] text-foreground">
-                Tribhuvan N. Airport - Swayobhunath Temple at Kathmandu
+                {itinerary?.[day]?.title || "Tribhuvan N. Airport - Swayobhunath Temple at Kathmandu"}
               </p>
               <span className="shrink-0 rounded bg-background p-3 text-base font-semibold tracking-[-0.04em] text-foreground">
                 8 hours
@@ -278,9 +293,7 @@ export default function PackageDetail({
             <div className="flex flex-col gap-4">
               <p className="font-body-alt text-lg tracking-[-0.04em] text-foreground">Description</p>
               <p className="font-body-alt text-base leading-[1.6] tracking-[-0.02em] text-text-secondary">
-                Join our expert local guide for unforgettable sightseeing and
-                trekking adventures across Nepal&apos;s majestic mountains,
-                ancient temples, and hidden valleys.
+                {itinerary?.[day]?.description || "Join our expert local guide for unforgettable sightseeing and trekking adventures across Nepal&apos;s majestic mountains, ancient temples, and hidden valleys."}
               </p>
             </div>
           </div>
@@ -291,7 +304,7 @@ export default function PackageDetail({
       </div>
 
       {/* Reviews & Ratings */}
-      <div className="flex flex-col gap-6">
+      {(!packageData || reviews.length > 0) && <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className={sectionHeading}>Reviews &amp; Ratings</h2>
           <button
@@ -309,9 +322,9 @@ export default function PackageDetail({
               <span className="font-body-alt text-base tracking-[-0.04em] text-[#a3adbb]">Search Here</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-semibold text-text-secondary">4.0</span>
-              <StarRating rating={4} starSize={24} />
-              <span className="text-lg font-semibold text-text-secondary">(13)</span>
+              <span className="text-xl font-semibold text-text-secondary">{rating.toFixed(1)}</span>
+              <StarRating rating={rating} starSize={24} />
+              <span className="text-lg font-semibold text-text-secondary">({reviewCount})</span>
             </div>
             <div className="flex flex-col gap-4">
               {BREAKDOWN.map((b) => (
@@ -335,12 +348,12 @@ export default function PackageDetail({
 
           {/* Reviews list */}
           <div className="flex flex-1 flex-col gap-4">
-            {REVIEWS.map((r) => (
+            {reviews.map((r) => (
               <ReviewCard key={r.name} {...r} />
             ))}
           </div>
         </div>
-      </div>
+      </div>}
     </section>
   );
 }

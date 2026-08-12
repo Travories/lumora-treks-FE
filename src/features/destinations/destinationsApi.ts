@@ -15,8 +15,10 @@ type CmsDestination = {
 function adaptCmsDestination(d: CmsDestination): DestinationCardData {
   return {
     id: String(d.id),
+    slug: d.slug,
     title: d.title,
-    image: d.image?.url || "/images/destination-card-default.png",
+    image: d.image?.src || d.image?.url || "/images/destination-card-default.png",
+    href: d.href || `/destinations/${d.slug}`,
     // No real price on Destination yet (only Package has one) — leave unset
     // so DestinationCard's own "$400" placeholder default applies, rather
     // than fabricating a number.

@@ -1,7 +1,17 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { RegionHighlight, SeasonalDestination } from "@/types";
+import type { CmsImage } from "@/lib/blocks";
 
 const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
+
+type CmsDestinationSummary = {
+  id: number | string;
+  title: string;
+  image?: CmsImage;
+  layout?: "tall" | "wide";
+};
+
+type DestinationListResponse = { items?: CmsDestinationSummary[] };
 
 export async function fetchRegionHighlights(): Promise<RegionHighlight[]> {
   try {
@@ -9,12 +19,12 @@ export async function fetchRegionHighlights(): Promise<RegionHighlight[]> {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data: DestinationListResponse = await res.json();
     if (data.items) {
-      return data.items.map((item: any) => ({
+      return data.items.map((item) => ({
         id: String(item.id),
         title: item.title,
-        image: item.image?.url ?? "",
+        image: item.image?.src ?? item.image?.url ?? "",
       }));
     }
     return [];
@@ -40,13 +50,13 @@ export async function fetchSeasonalDestinations(): Promise<SeasonalDestination[]
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data: DestinationListResponse = await res.json();
     if (data.items) {
-      return data.items.map((item: any) => ({
+      return data.items.map((item) => ({
         id: String(item.id),
         title: item.title,
-        image: item.image?.url ?? "",
-        layout: item.default_layout ?? "tall",
+        image: item.image?.src ?? item.image?.url ?? "",
+        layout: item.layout ?? "tall",
       }));
     }
     return [];

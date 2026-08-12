@@ -388,7 +388,10 @@ export default function Checkout() {
           <button
             type="button"
             disabled={!allDone || !agreed}
-            onClick={() => router.push("/checkout/success")}
+            onClick={() => {
+              if (!selectedAmount) return;
+              router.push(`/checkout/success?simulation=1&amount=${selectedAmount.amount}`);
+            }}
             className={clsx(
               "w-full rounded-lg px-5 py-3 font-body-alt text-lg font-medium tracking-[-0.04em] transition-transform",
               allDone && agreed
@@ -396,10 +399,11 @@ export default function Checkout() {
                 : "cursor-not-allowed bg-border text-[#909dad]"
             )}
           >
-            {allDone && selectedAmount
-              ? `Continue & pay $${selectedAmount.amount}`
-              : "Next"}
+            {allDone && selectedAmount ? `Simulate payment $${selectedAmount.amount}` : "Next"}
           </button>
+          <p className="text-sm text-text-muted">
+            Demo mode only — no card details are requested and no payment is charged.
+          </p>
         </div>
 
         {/* Right — order summary */}

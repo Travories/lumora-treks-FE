@@ -32,9 +32,11 @@ export type PackageListResult = {
 /** Shape consumed by `DestinationCard`. */
 export type DestinationCardData = {
   id: string;
+  slug?: string;
   title: string;
   image: string;
   price?: string; // "starting from $X" amount, e.g. "400"
+  href?: string;
 };
 
 export type RegionHighlight = {

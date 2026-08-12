@@ -31,6 +31,7 @@ export type CmsImage = {
   alt?: string;
   width?: number;
   height?: number;
+  src?: string;
 } | null | undefined;
 
 /** `HeadingGroupBlock` (backend `apps/core/blocks.py`) — the eyebrow /
@@ -50,6 +51,71 @@ export type CmsListResponse<T> = {
   items: T[];
 };
 
+export type CmsPackageDetail = {
+  id: number | string;
+  slug: string;
+  title: string;
+  category: string;
+  summary: string;
+  description: string;
+  image: CmsImage;
+  rating: number;
+  review_count: number;
+  duration: string;
+  duration_days?: number | null;
+  people_count: number;
+  price: number;
+  discount_price?: number | null;
+  currency: string;
+  difficulty: string;
+  booking_url?: string;
+  destination?: CmsDestinationDetail | null;
+  highlights: Array<{ text: string; icon?: string }>;
+  itinerary: Array<{
+    day_label: string;
+    title: string;
+    description: string;
+    image: CmsImage;
+  }>;
+  gallery: Array<{ image: CmsImage; caption: string }>;
+  includes: string[];
+  excludes: string[];
+  testimonials: CmsTestimonial[];
+};
+
+export type CmsDestinationDetail = {
+  id: number | string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  best_season: string;
+  image: CmsImage;
+  region: string;
+  layout: string;
+  href?: string;
+  packages: Array<{
+    id: number | string;
+    slug: string;
+    title: string;
+    summary?: string;
+    image: CmsImage;
+    price?: number;
+    currency?: string;
+  }>;
+};
+
+export type CmsTestimonial = {
+  id: number | string;
+  quote: string;
+  author_name: string;
+  author_role: string;
+  avatar: CmsImage;
+  rating: number;
+  package?: string | null;
+  is_featured?: boolean;
+};
+
 export type CmsBlock = {
   type: string;
   value: CmsBlockValue;
@@ -64,5 +130,8 @@ export type CmsPage = {
   seo?: {
     title?: string;
     description?: string;
+    canonical_url?: string;
+    noindex?: boolean;
+    og_image?: CmsImage;
   };
 };

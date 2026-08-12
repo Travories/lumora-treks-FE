@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import type { ReactNode } from "react";
 import { withHighlight } from "@/lib/highlightText";
 import type { CmsHeadingGroup, CmsImage } from "@/lib/blocks";
 
