@@ -2,7 +2,7 @@ import { apiSlice } from "@/store/api/apiSlice";
 import type { PackageCardData, PackageListResult } from "@/types";
 import { adaptCmsPackage, type CmsPackage } from "@/lib/adaptCmsPackage";
 import type { CmsListResponse } from "@/lib/blocks";
-import { CULTURAL_TOURS, type SelectPackagesParams } from "./packagesData";
+import type { SelectPackagesParams } from "./packagesData";
 
 /**
  * Package endpoints. `getPopularPackages`/`getPackages` hit the real backend
@@ -44,7 +44,8 @@ export const packagesApi = apiSlice.injectEndpoints({
       providesTags: ["Package"],
     }),
     getCulturalTours: builder.query<PackageCardData[], void>({
-      queryFn: () => ({ data: CULTURAL_TOURS }),
+      query: () => "packages/?limit=6",
+      transformResponse: (res: CmsListResponse<CmsPackage>) => res.items.map(adaptCmsPackage),
       providesTags: ["Package"],
     }),
   }),

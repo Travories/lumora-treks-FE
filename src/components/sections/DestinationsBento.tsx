@@ -17,6 +17,9 @@ import type { CmsHeadingGroup, CmsImage } from "@/lib/blocks";
  * by each item's `layout` field — a general arbitrary-count bento algorithm
  * is out of scope here. */
 
+import CardSkeleton from "@/components/ui/CardSkeleton";
+import { useDestinationsQuery } from "@/features/destinations/destinationQueries";
+
 export type BentoItem = {
   title: string;
   image?: CmsImage;
@@ -31,14 +34,6 @@ const SLOT_PLACEMENT = [
   "lg:col-start-3 lg:row-start-2",
 ];
 
-const DEFAULT_ITEMS: BentoItem[] = [
-  { image: { url: "/images/dest-dhorpatan.png" }, title: "Dhorpatan Region" },
-  { image: { url: "/images/dest-poonhills.png" }, title: "Poon Hills" },
-  { image: { url: "/images/dest-annapurna.png" }, title: "Annapurna Base Camp" },
-  { image: { url: "/images/dest-chitwan.png" }, title: "Chitwan" },
-  { image: { url: "/images/dest-kathmandu.png" }, title: "Kathmandu Valley" },
-];
-
 const DEFAULT_HEADING: CmsHeadingGroup = {
   heading: "Explore famous destinations",
   description: "Whether you're seeking mountain adventures, wildlife encounters.",
@@ -46,12 +41,22 @@ const DEFAULT_HEADING: CmsHeadingGroup = {
 
 export default function DestinationsBento({
   heading = DEFAULT_HEADING,
-  items = DEFAULT_ITEMS,
+  items,
 }: {
   heading?: CmsHeadingGroup;
   items?: BentoItem[];
 } = {}) {
-  const cards = items.slice(0, 5);
+  const { data: apiDestinations, isLoading } = useDestinationsQuery();
+
+  const cards: BentoItem[] = items && items.length > 0
+    ? items.slice(0, 5)
+    : (apiDestinations ?? []).slice(0, 5).map((d) => ({
+        title: d.title,
+        image: { url: d.image },
+        href: `/destinations/${d.id}`,
+      }));
+
+  const showSkeleton = isLoading && !items && cards.length === 0;
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -69,22 +74,28 @@ export default function DestinationsBento({
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:h-[570px] lg:grid-cols-3 lg:grid-rows-2">
-        {cards.map((card, i) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
-            className={`h-[275px] lg:h-auto ${SLOT_PLACEMENT[i] ?? ""}`}
-          >
-            <DestinationCard
-              image={card.image?.url || "/images/destination-card-default.png"}
-              title={card.title}
-              href={card.href}
-            />
-          </motion.div>
-        ))}
+        {showSkeleton
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className={`h-[275px] lg:h-auto ${SLOT_PLACEMENT[i] ?? ""}`}>
+                <CardSkeleton />
+              </div>
+            ))
+          : cards.map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
+                className={`h-[275px] lg:h-auto ${SLOT_PLACEMENT[i] ?? ""}`}
+              >
+                <DestinationCard
+                  image={card.image?.url || "/images/destination-card-default.png"}
+                  title={card.title}
+                  href={card.href}
+                />
+              </motion.div>
+            ))}
       </div>
     </section>
   );

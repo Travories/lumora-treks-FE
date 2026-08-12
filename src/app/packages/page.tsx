@@ -4,7 +4,6 @@ import PackagesHero from "@/components/sections/PackagesHero";
 import PopularPackagesGrid from "@/components/sections/PopularPackagesGrid";
 import IntroStats from "@/components/sections/IntroStats";
 import CulturalDayTours from "@/components/sections/CulturalDayTours";
-import { selectPackages, CULTURAL_TOURS } from "@/features/packages/packagesData";
 import BlockRenderer from "@/components/BlockRenderer";
 import { getPageByPath } from "@/lib/cms";
 import {
@@ -38,9 +37,6 @@ export default async function PackagesPage({
 
   const page = await getPageByPath("/packages");
 
-  // Initial data for SSR — must match PopularPackagesGrid's initial state
-  const initialGrid = selectPackages(queryParams);
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex-1">
@@ -50,9 +46,9 @@ export default async function PackagesPage({
         ) : (
           <>
             <PackagesHero />
-            <PopularPackagesGrid searchLocation={location} initialData={initialGrid} />
+            <PopularPackagesGrid searchLocation={location} />
             <IntroStats />
-            <CulturalDayTours initialItems={CULTURAL_TOURS} />
+            <CulturalDayTours />
           </>
         )}
       </main>
@@ -60,5 +56,3 @@ export default async function PackagesPage({
     </HydrationBoundary>
   );
 }
-
-

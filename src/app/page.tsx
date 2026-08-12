@@ -9,7 +9,6 @@ import DestinationsBento from "@/components/sections/DestinationsBento";
 import AuthenticExperiences from "@/components/sections/AuthenticExperiences";
 import CTABand from "@/components/sections/CTABand";
 import FAQSection from "@/components/sections/FAQSection";
-import { POPULAR_PACKAGES } from "@/features/packages/packagesData";
 import BlockRenderer from "@/components/BlockRenderer";
 import { getPageByPath } from "@/lib/cms";
 import {
@@ -46,7 +45,7 @@ export default async function Home() {
               <Hero />
             </div>
             <IntroStats />
-            <PopularPackages initialItems={POPULAR_PACKAGES} />
+            <PopularPackages />
             <ExperienceSection />
             <WhyChooseUs />
             <DestinationsBento />
@@ -60,5 +59,3 @@ export default async function Home() {
     </HydrationBoundary>
   );
 }
-
-

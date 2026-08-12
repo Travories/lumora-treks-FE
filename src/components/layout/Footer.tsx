@@ -17,42 +17,22 @@ import { useSiteSettingsQuery } from "@/features/site/siteQueries";
  * but this design only has one flat link list — columns are flattened,
  * headings dropped, matching the current single-column layout. */
 
-const DEFAULT_SOCIALS = [
-  { icon: "mdi:facebook", label: "Facebook", href: "#" },
-  { icon: "mdi:instagram", label: "Instagram", href: "#" },
-  { icon: "prime:twitter", label: "X", href: "#" },
-  { icon: "mdi:whatsapp", label: "WhatsApp", href: "#" },
-];
-
-const DEFAULT_LINKS = [
-  { label: "Contact Us", href: "/contact" },
-  { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms & Conditions", href: "/terms" },
-  { label: "Login to Admin Portal", href: "/admin" },
-];
-
-const DEFAULT_DESCRIPTION =
-  "Your trusted travel partner in Nepal. We curate authentic experiences, breathtaking destinations, and unforgettable memories.";
-
 export default function Footer() {
-  const { data: site } = useSiteSettingsQuery();
-
+  const { data: site, isLoading } = useSiteSettingsQuery();
 
   const siteName = site?.brand.site_name || "Lumora Treks";
-  const description = site?.footer.description || DEFAULT_DESCRIPTION;
+  const description = site?.footer?.description || "";
 
-  const cmsSocials =
-    site?.footer.socials
-      .map((s) => ({ icon: s.value.icon, label: s.value.platform, href: s.value.url }))
+  const socials =
+    site?.footer?.socials
+      ?.map((s) => ({ icon: s.value.icon, label: s.value.platform, href: s.value.url }))
       .filter((s) => s.icon && s.href) ?? [];
-  const socials = cmsSocials.length ? cmsSocials : DEFAULT_SOCIALS;
 
-  const cmsLinks =
-    site?.footer.columns
-      .flatMap((c) => c.value.links)
+  const links =
+    site?.footer?.columns
+      ?.flatMap((c) => c.value.links)
       .map((l) => ({ label: l.label || "", href: l.href || "" }))
       .filter((l) => l.label && l.href) ?? [];
-  const links = cmsLinks.length ? cmsLinks : DEFAULT_LINKS;
 
   return (
     <footer className="px-5 pb-5">

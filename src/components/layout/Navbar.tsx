@@ -20,13 +20,6 @@ import { useSiteSettingsQuery } from "@/features/site/siteQueries";
  * `/logo.svg` asset either way (see Hero's mountain-cutout note — swapping
  * to a CMS-uploaded raster logo needs its own treatment). */
 
-const DEFAULT_NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Packages", href: "/packages" },
-  { label: "Destinations", href: "/destinations" },
-  { label: "Contact Us", href: "/contact" },
-];
-
 export default function Navbar() {
   const pathname = usePathname();
   const isMobileNavOpen = useUIStore((s) => s.isMobileNavOpen);
@@ -34,13 +27,11 @@ export default function Navbar() {
   const closeMobileNav = useUIStore((s) => s.closeMobileNav);
   const { data: site, isLoading } = useSiteSettingsQuery();
 
-
   const siteName = site?.brand.site_name || "Lumora Treks";
-  const navLinks =
+  const links =
     site?.navigation.items
       .map((item) => ({ label: item.value.label || "", href: item.value.href || "" }))
       .filter((link) => link.label && link.href) ?? [];
-  const links = navLinks.length ? navLinks : DEFAULT_NAV_LINKS;
   const ctaLink = site?.navigation.cta_button[0]?.value;
   const cta = { label: ctaLink?.label || "Reserve Now", href: ctaLink?.href || "/enquiry" };
 

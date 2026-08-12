@@ -24,65 +24,7 @@ export type WhyChooseUsCard = {
   image?: CmsImage;
 };
 
-type DefaultBlock = { blob: string; dark?: boolean; title: ReactNode; desc: ReactNode };
 
-const DEFAULT_BLOCKS: DefaultBlock[] = [
-  {
-    blob: "/images/why-blob-1.png",
-    title: (
-      <>
-        Curated <span className="italic text-primary-accent">Destinations</span>
-      </>
-    ),
-    desc: (
-      <>
-        Every destination is handpicked to showcase the best of{" "}
-        <span className="italic text-[#909dad]">
-          nature, culture, and adventure, ensuring every trip is truly
-          unforgettable.
-        </span>
-      </>
-    ),
-  },
-  {
-    blob: "/images/why-blob-2.png",
-    dark: true,
-    title: (
-      <>
-        Seamless <span className="italic text-primary-accent">Travel</span>{" "}
-        Planning
-      </>
-    ),
-    desc: (
-      <>
-        From personalized itineraries and accommodations to transportation and
-        local experiences,{" "}
-        <span className="text-[#c2ffb6]">
-          we handle every detail so you can simply enjoy the journey.
-        </span>
-      </>
-    ),
-  },
-  {
-    blob: "/images/why-blob-3.png",
-    title: (
-      <>
-        Trusted Local{" "}
-        <span className="italic text-primary-accent">Expertise</span>
-      </>
-    ),
-    desc: (
-      <>
-        Travel with confidence through experienced local guides, reliable
-        partners, and{" "}
-        <span className="text-[#909dad]">
-          insider recommendations that help you discover destinations like never
-          before.
-        </span>
-      </>
-    ),
-  },
-];
 
 const DEFAULT_HEADING: CmsHeadingGroup = {
   heading: "Why Lumora Treks?",
@@ -118,7 +60,7 @@ export default function WhyChooseUs({
         </div>
 
         <div className="grid w-full gap-8 md:grid-cols-3">
-          {cards
+          {cards && cards.length > 0
             ? cards.map((card, i) => (
                 <motion.div
                   key={card.heading}
@@ -156,38 +98,15 @@ export default function WhyChooseUs({
                   )}
                 </motion.div>
               ))
-            : DEFAULT_BLOCKS.map((block, i) => (
-                <motion.div
+            : Array.from({ length: 3 }).map((_, i) => (
+                <div
                   key={i}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
-                  className={clsx(
-                    "relative flex h-[362px] flex-col justify-center gap-10 overflow-hidden rounded-2xl px-10 py-14",
-                    block.dark ? "bg-foreground" : "bg-background"
-                  )}
+                  className="flex h-[362px] flex-col justify-center gap-6 rounded-2xl bg-muted/40 p-10 animate-pulse"
                 >
-                  <div className="absolute -right-10 -top-16 size-52 rotate-[39deg] overflow-hidden rounded-[95px] shadow-[-4px_4px_12px_0_rgba(18,136,67,0.12)]">
-                    <Image src={block.blob} alt="" fill className="object-cover" />
-                  </div>
-                  <p
-                    className={clsx(
-                      "relative text-2xl font-bold tracking-[-0.04em]",
-                      block.dark ? "text-background" : "text-foreground"
-                    )}
-                  >
-                    {block.title}
-                  </p>
-                  <p
-                    className={clsx(
-                      "relative font-body-alt text-base font-medium tracking-[-0.04em]",
-                      block.dark ? "text-[#ebffe8]" : "text-text-secondary"
-                    )}
-                  >
-                    {block.desc}
-                  </p>
-                </motion.div>
+                  <div className="h-8 w-2/3 rounded bg-muted" />
+                  <div className="h-4 w-full rounded bg-muted" />
+                  <div className="h-4 w-4/5 rounded bg-muted" />
+                </div>
               ))}
         </div>
       </div>

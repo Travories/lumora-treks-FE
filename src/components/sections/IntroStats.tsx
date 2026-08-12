@@ -13,12 +13,6 @@ import { withHighlight } from "@/lib/highlightText";
 
 export type StatItem = { value: string; label: string; icon?: string };
 
-const DEFAULT_STATS: StatItem[] = [
-  { value: "24K+", label: "Happy Travelers" },
-  { value: "120", label: "Cured Destinations" },
-  { value: "4.9", label: "Overall Ratings" },
-];
-
 const reveal = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
@@ -30,7 +24,7 @@ export default function IntroStats({
   highlight = "unforgettable journeys",
   description = "From iconic landmarks to hidden gems, we curate authentic travel experiences that inspire exploration, create lasting memories, and make every journey seamless from start to finish.",
   description_highlight = "and make every journey seamless from start to finish.",
-  stats = DEFAULT_STATS,
+  stats,
 }: {
   heading?: string;
   highlight?: string;
@@ -38,6 +32,8 @@ export default function IntroStats({
   description_highlight?: string;
   stats?: StatItem[];
 } = {}) {
+  const statItems = stats ?? [];
+
   return (
     <section className="px-6 py-16 md:py-20 lg:py-24">
       <div className="mx-auto flex max-w-[980px] flex-col items-center gap-10 text-center">
@@ -62,16 +58,25 @@ export default function IntroStats({
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
           className="flex flex-wrap items-start justify-center gap-x-20 gap-y-8"
         >
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center gap-1">
-              <span className="text-[40px] font-bold leading-tight tracking-[-0.04em] text-foreground">
-                {stat.value}
-              </span>
-              <span className="text-xl font-medium italic tracking-[-0.04em] text-text-secondary">
-                {stat.label}
-              </span>
-            </div>
-          ))}
+          {statItems.length === 0 ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-2 animate-pulse">
+                <div className="h-10 w-24 rounded bg-muted" />
+                <div className="h-5 w-32 rounded bg-muted" />
+              </div>
+            ))
+          ) : (
+            statItems.map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center gap-1">
+                <span className="text-[40px] font-bold leading-tight tracking-[-0.04em] text-foreground">
+                  {stat.value}
+                </span>
+                <span className="text-xl font-medium italic tracking-[-0.04em] text-text-secondary">
+                  {stat.label}
+                </span>
+              </div>
+            ))
+          )}
         </motion.div>
       </div>
     </section>

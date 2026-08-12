@@ -18,33 +18,12 @@ export type AuthenticExperienceItem = {
   description?: string;
 };
 
-const DEFAULT_ITEMS: AuthenticExperienceItem[] = [
-  {
-    number: "01",
-    title: "Authentic Experiences",
-    description:
-      "Go beyond tourist attractions and immerse yourself in local cultures, traditions, and hidden gems.",
-  },
-  {
-    number: "02",
-    title: "Hassle-Free Planning",
-    description:
-      "From accommodations to transportation, we handle every detail so you can focus on making memories.",
-  },
-  {
-    number: "03",
-    title: "Safe & Reliable Travel",
-    description:
-      "Enjoy peace of mind with verified travel partners, expert guidance, and dedicated support throughout your journey.",
-  },
-];
-
 export default function AuthenticExperiences({
   heading = "Discover Nepal Through Authentic Experiences with Us",
   description = "From the majestic Himalayas and ancient heritage sites to serene lakes and vibrant local cultures, Journeyfinder helps you experience Nepal beyond the ordinary.",
   description_highlight = "Journeyfinder helps you experience Nepal beyond the ordinary.",
   image,
-  items = DEFAULT_ITEMS,
+  items,
   reversed = false,
 }: {
   heading?: string;
@@ -56,6 +35,7 @@ export default function AuthenticExperiences({
 } = {}) {
   const imageSrc = image?.url || "/images/authentic-nepal.png";
   const imageAlt = image?.alt || "Ancient heritage temples in Nepal";
+  const listItems = items ?? [];
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -98,23 +78,35 @@ export default function AuthenticExperiences({
           )}
 
           <div className="flex flex-col gap-6">
-            {items.map((item, index) => (
-              <div key={item.title} className="flex gap-4">
-                <span className="text-2xl font-bold tracking-[-0.04em] text-foreground">
-                  {item.number || String(index + 1).padStart(2, "0")}
-                </span>
-                <div className="flex flex-1 flex-col gap-3">
-                  <h3 className="text-2xl font-bold tracking-[-0.04em] text-foreground">
-                    {item.title}
-                  </h3>
-                  {item.description && (
-                    <p className="font-body-alt text-xl tracking-[-0.04em] text-text-secondary">
-                      {item.description}
-                    </p>
-                  )}
+            {listItems.length === 0 ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-4 animate-pulse">
+                  <div className="h-8 w-8 rounded bg-muted" />
+                  <div className="flex flex-1 flex-col gap-2">
+                    <div className="h-6 w-1/3 rounded bg-muted" />
+                    <div className="h-4 w-full rounded bg-muted" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              listItems.map((item, index) => (
+                <div key={item.title} className="flex gap-4">
+                  <span className="text-2xl font-bold tracking-[-0.04em] text-foreground">
+                    {item.number || String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex flex-1 flex-col gap-3">
+                    <h3 className="text-2xl font-bold tracking-[-0.04em] text-foreground">
+                      {item.title}
+                    </h3>
+                    {item.description && (
+                      <p className="font-body-alt text-xl tracking-[-0.04em] text-text-secondary">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

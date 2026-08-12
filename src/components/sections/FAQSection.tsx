@@ -23,38 +23,9 @@ const DEFAULT_HEADING: CmsHeadingGroup = {
   description: "These are the questions we hear more often.",
 };
 
-const DEFAULT_ITEMS: FAQItem[] = [
-  {
-    question: "Is this secure?",
-    answer:
-      "Every destination is handpicked to showcase the best of nature, culture, and adventure, ensuring every trip is truly unforgettable.",
-    open_by_default: true,
-  },
-  {
-    question: "How can we reach out to you?",
-    answer:
-      "Every destination is handpicked to showcase the best of nature, culture, and adventure, ensuring every trip is truly unforgettable.",
-  },
-  {
-    question: "Address of your place",
-    answer:
-      "Every destination is handpicked to showcase the best of nature, culture, and adventure, ensuring every trip is truly unforgettable.",
-  },
-  {
-    question: "How to contact with agency?",
-    answer:
-      "Every destination is handpicked to showcase the best of nature, culture, and adventure, ensuring every trip is truly unforgettable.",
-  },
-  {
-    question: "How to book appointment to your place?",
-    answer:
-      "Every destination is handpicked to showcase the best of nature, culture, and adventure, ensuring every trip is truly unforgettable.",
-  },
-];
-
 export default function FAQSection({
   heading = DEFAULT_HEADING,
-  items = DEFAULT_ITEMS,
+  items,
   show_side_card = true,
   side_card_heading,
   side_card_text,
@@ -67,7 +38,8 @@ export default function FAQSection({
   side_card_text?: string;
   side_card_button?: FAQButton;
 } = {}) {
-  const defaultOpen = items.findIndex((item) => item.open_by_default);
+  const faqItems = items ?? [];
+  const defaultOpen = faqItems.findIndex((item) => item.open_by_default);
   const [openIndex, setOpenIndex] = useState<number | null>(
     defaultOpen === -1 ? 0 : defaultOpen
   );
@@ -90,43 +62,51 @@ export default function FAQSection({
       <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-[60px]">
         {/* Accordion */}
         <div className="flex flex-1 flex-col gap-7">
-          {items.map((faq, i) => {
-            const open = openIndex === i;
-            return (
-              <div key={faq.question} className="border-b border-border pb-7">
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(open ? null : i)}
-                  aria-expanded={open}
-                  className="flex w-full items-center justify-between gap-4 text-left"
-                >
-                  <span className="text-xl font-semibold tracking-[-0.04em] text-foreground">
-                    {faq.question}
-                  </span>
-                  <Icon
-                    icon={open ? "charm:cross" : "tabler:plus-filled"}
-                    className="size-8 shrink-0 text-foreground"
-                  />
-                </button>
-                <AnimatePresence initial={false}>
-                  {open && faq.answer && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="overflow-hidden font-body-alt text-lg tracking-[-0.04em] text-text-secondary"
-                    >
-                      <span
-                        className="mt-3 block"
-                        dangerouslySetInnerHTML={{ __html: faq.answer }}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          {faqItems.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="border-b border-border pb-7 animate-pulse">
+                <div className="h-6 w-3/4 rounded bg-muted" />
               </div>
-            );
-          })}
+            ))
+          ) : (
+            faqItems.map((faq, i) => {
+              const open = openIndex === i;
+              return (
+                <div key={faq.question} className="border-b border-border pb-7">
+                  <button
+                    type="button"
+                    onClick={() => setOpenIndex(open ? null : i)}
+                    aria-expanded={open}
+                    className="flex w-full items-center justify-between gap-4 text-left"
+                  >
+                    <span className="text-xl font-semibold tracking-[-0.04em] text-foreground">
+                      {faq.question}
+                    </span>
+                    <Icon
+                      icon={open ? "charm:cross" : "tabler:plus-filled"}
+                      className="size-8 shrink-0 text-foreground"
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {open && faq.answer && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="overflow-hidden font-body-alt text-lg tracking-[-0.04em] text-text-secondary"
+                      >
+                        <span
+                          className="mt-3 block"
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Contact card */}
