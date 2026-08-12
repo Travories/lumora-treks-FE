@@ -63,7 +63,7 @@ export default function Navbar() {
 
         {/* Reserve (desktop) */}
         <Link
-          href="/checkout"
+          href="/enquiry"
           className="hidden shrink-0 items-center justify-center rounded-full bg-foreground px-5 py-2.5 font-body-alt text-base font-semibold tracking-[-0.04em] text-background transition-transform hover:scale-[1.03] active:scale-95 lg:inline-flex"
         >
           Reserve Now
@@ -115,7 +115,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="/checkout"
+              href="/enquiry"
               onClick={closeMobileNav}
               className="mt-2 inline-flex items-center justify-center rounded-[34px] bg-foreground px-6 py-3.5 font-body-alt text-lg font-semibold text-background"
             >

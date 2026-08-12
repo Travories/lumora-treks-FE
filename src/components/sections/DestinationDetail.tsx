@@ -80,9 +80,11 @@ const fadeUp = {
 };
 
 export default function DestinationDetail({
-  enquiryHref,
+  ctaHref = "/packages",
+  ctaLabel = "Explore Packages",
 }: {
-  enquiryHref?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 } = {}) {
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 pt-6 sm:px-12 lg:px-20">
@@ -260,10 +262,10 @@ export default function DestinationDetail({
             </div>
           </div>
           <Link
-            href={enquiryHref ?? "/packages"}
+            href={ctaHref}
             className="flex w-full items-center justify-center rounded-lg bg-foreground p-3 font-body-alt text-base font-medium tracking-[-0.02em] text-background transition-transform hover:scale-[1.02] active:scale-95"
           >
-            {enquiryHref ? "Enquire Now" : "Explore Packages"}
+            {ctaLabel}
           </Link>
         </motion.aside>
       </section>

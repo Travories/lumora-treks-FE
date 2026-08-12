@@ -52,7 +52,7 @@ export default function CTABand() {
           className="absolute inset-x-0 top-[52%] z-30 flex justify-center px-6"
         >
           <Link
-            href="/checkout"
+            href="/enquiry"
             className="inline-flex items-center justify-center rounded-full bg-background px-6 py-4 font-body-alt text-lg font-semibold tracking-[-0.04em] text-foreground transition-transform hover:scale-[1.03] active:scale-95"
           >
             Reserve Now
