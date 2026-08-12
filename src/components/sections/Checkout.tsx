@@ -6,37 +6,40 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
+import clsx from "clsx";
 import StarRating from "@/components/ui/StarRating";
 
-/** Checkout / payment — Figma node 118:4743 ("Confirm and Pay"). Left: stepped
- * payment flow (Your Information form + collapsed Payment Method / Amount +
- * agreement + Next). Right: order summary. Presentational (no backend). */
+/** Checkout / payment — Figma node 118:5161 ("PaymentFlow"). Stepped booking
+ * flow: Your Information → Payment Method → Payment Amount → confirm & pay. Each
+ * step's Done collapses it to a summary with Change; once all done the agreement
+ * enables "Continue & pay". Right column = order summary. Presentational. */
+
+const TOTAL = 428;
+
+const METHODS = [
+  { id: "card", label: "Credit or debit card", icon: "mdi:credit-card-outline" },
+  { id: "fonepay", label: "Fonepay", img: "/images/fonepay.png" },
+] as const;
+
+const AMOUNTS = [
+  { id: "full", label: "Pay 100% now", note: "Total amount : $428", amount: TOTAL, pct: "100%" },
+  {
+    id: "half",
+    label: "Pay 50% now",
+    note: "Total amount : $214, pay remaining before 4 June, 2026",
+    amount: TOTAL / 2,
+    pct: "50%",
+  },
+] as const;
 
 const inputBase =
   "w-full rounded-lg border border-border p-3 font-body-alt text-base tracking-[-0.04em] text-foreground placeholder:text-[#b2bbc6] focus:outline-none";
+const doneBtn =
+  "self-end rounded-lg bg-foreground px-5 py-3 font-body-alt text-base font-medium tracking-[-0.03em] text-background transition-transform hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100";
 
-function StepHeader({ n, title }: { n: number; title: string }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 pb-2">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground font-body-alt text-sm text-white">
-        {n}
-      </span>
-      <span className="font-body-alt text-xl font-medium tracking-[-0.04em] text-foreground">
-        {title}
-      </span>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-1 flex-col gap-1">
       <span className="py-1 font-body-alt text-base font-medium tracking-[-0.02em] text-[#3d4c5e]">
         {label} <span className="text-[#c62222]">*</span>
       </span>
@@ -45,9 +48,91 @@ function Field({
   );
 }
 
+function StepShell({
+  n,
+  title,
+  onChange,
+  children,
+}: {
+  n: number;
+  title: string;
+  onChange?: () => void;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-5 rounded-lg border border-border p-6">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground font-body-alt text-sm text-white">
+            {n}
+          </span>
+          <span className="font-body-alt text-xl font-medium tracking-[-0.04em] text-foreground">
+            {title}
+          </span>
+        </div>
+        {onChange && (
+          <button
+            type="button"
+            onClick={onChange}
+            className="shrink-0 rounded-lg border border-border bg-background px-5 py-2.5 font-body-alt text-base tracking-[-0.03em] text-foreground"
+          >
+            Change
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function RadioRow({
+  selected,
+  onSelect,
+  children,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="flex w-full items-center justify-between gap-3 border-b border-border pb-4 text-left last:border-b-0 last:pb-0"
+    >
+      {children}
+      <span
+        className={clsx(
+          "flex size-6 shrink-0 items-center justify-center rounded-full border",
+          selected ? "border-foreground" : "border-[#b2bbc6]"
+        )}
+      >
+        {selected && <span className="size-3 rounded-full bg-foreground" />}
+      </span>
+    </button>
+  );
+}
+
+const dot = <span className="size-1 rounded-full bg-[#3d4c5e]" />;
+
 export default function Checkout() {
   const router = useRouter();
+  const [openStep, setOpenStep] = useState<number | null>(1);
+  const [maxDone, setMaxDone] = useState(0);
+
+  const [info, setInfo] = useState({ fullName: "", dob: "", email: "", phone: "" });
+  const [method, setMethod] = useState<string | null>(null);
+  const [amount, setAmount] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
+
+  const complete = (n: number) => {
+    setMaxDone((m) => Math.max(m, n));
+    setOpenStep(n < 3 ? n + 1 : null);
+  };
+
+  const allDone = maxDone >= 3;
+  const selectedMethod = METHODS.find((m) => m.id === method);
+  const selectedAmount = AMOUNTS.find((a) => a.id === amount);
 
   return (
     <motion.section
@@ -71,84 +156,249 @@ export default function Checkout() {
       </div>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        {/* Left — payment flow */}
+        {/* Left — stepped payment flow */}
         <div className="flex flex-col gap-6 lg:w-[758px]">
-          <div className="rounded-lg border border-border p-6">
-            <StepHeader n={1} title="Your Information" />
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mt-2 flex flex-col gap-5"
-            >
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Full Name">
-                  <input
-                    type="text"
-                    placeholder="Enter your full name"
-                    className={inputBase}
-                  />
-                </Field>
-                <Field label="Date of Birth">
-                  <input
-                    type="text"
-                    placeholder="Enter your dob"
-                    className={inputBase}
-                  />
-                </Field>
-                <Field label="Email Address">
-                  <input
-                    type="email"
-                    placeholder="Enter your email address"
-                    className={inputBase}
-                  />
-                </Field>
-                <Field label="Phone Number">
-                  <input
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    className={inputBase}
-                  />
-                </Field>
-              </div>
-              <button
-                type="submit"
-                className="self-end rounded-lg bg-foreground px-5 py-3 font-body-alt text-base font-medium tracking-[-0.04em] text-background transition-transform hover:scale-[1.02] active:scale-95"
+          {/* Step 1 — Your Information */}
+          <StepShell
+            n={1}
+            title="Your Information"
+            onChange={maxDone >= 1 && openStep !== 1 ? () => setOpenStep(1) : undefined}
+          >
+            {openStep === 1 ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  complete(1);
+                }}
+                className="flex flex-col gap-5"
               >
-                Done
-              </button>
-            </form>
-          </div>
+                <div className="flex flex-col gap-5 sm:flex-row">
+                  <Field label="Full Name">
+                    <input
+                      required
+                      type="text"
+                      value={info.fullName}
+                      onChange={(e) => setInfo({ ...info, fullName: e.target.value })}
+                      placeholder="Enter your full name"
+                      className={inputBase}
+                    />
+                  </Field>
+                  <Field label="Date of Birth">
+                    <input
+                      required
+                      type="text"
+                      value={info.dob}
+                      onChange={(e) => setInfo({ ...info, dob: e.target.value })}
+                      placeholder="Enter your dob"
+                      className={inputBase}
+                    />
+                  </Field>
+                </div>
+                <div className="flex flex-col gap-5 sm:flex-row">
+                  <Field label="Email Address">
+                    <input
+                      required
+                      type="email"
+                      value={info.email}
+                      onChange={(e) => setInfo({ ...info, email: e.target.value })}
+                      placeholder="Enter your email address"
+                      className={inputBase}
+                    />
+                  </Field>
+                  <Field label="Phone Number">
+                    <input
+                      required
+                      type="tel"
+                      value={info.phone}
+                      onChange={(e) => setInfo({ ...info, phone: e.target.value })}
+                      placeholder="Enter your phone number"
+                      className={inputBase}
+                    />
+                  </Field>
+                </div>
+                <button type="submit" className={doneBtn}>
+                  Done
+                </button>
+              </form>
+            ) : maxDone >= 1 ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-body-alt text-base tracking-[-0.04em] text-[#3d4c5e]">
+                <span className="flex items-center gap-2">
+                  <Icon icon="ion:people-outline" className="size-4" />
+                  {info.fullName || "—"}
+                </span>
+                {dot}
+                <span className="flex items-center gap-2">
+                  <Icon icon="formkit:date" className="size-3.5" />
+                  {info.dob || "—"}
+                </span>
+                {dot}
+                <span className="flex items-center gap-2">
+                  <Icon icon="mdi:email-outline" className="size-3.5" />
+                  {info.email || "—"}
+                </span>
+                {dot}
+                <span className="flex items-center gap-2">
+                  <Icon icon="mdi:phone-outline" className="size-3.5" />
+                  {info.phone || "—"}
+                </span>
+              </div>
+            ) : null}
+          </StepShell>
 
-          <div className="rounded-lg border border-border p-6">
-            <StepHeader n={2} title="Payment Method" />
-          </div>
-          <div className="rounded-lg border border-border p-6">
-            <StepHeader n={3} title="Payment Amount" />
-          </div>
+          {/* Step 2 — Payment Method */}
+          <StepShell
+            n={2}
+            title="Payment Method"
+            onChange={maxDone >= 2 && openStep !== 2 ? () => setOpenStep(2) : undefined}
+          >
+            {openStep === 2 ? (
+              <>
+                <div className="flex flex-col gap-4">
+                  {METHODS.map((m) => (
+                    <RadioRow
+                      key={m.id}
+                      selected={method === m.id}
+                      onSelect={() => setMethod(m.id)}
+                    >
+                      <span className="flex items-center gap-3">
+                        {"img" in m ? (
+                          <Image
+                            src={m.img}
+                            alt=""
+                            width={32}
+                            height={32}
+                            className="size-8 shrink-0 object-contain"
+                          />
+                        ) : (
+                          <Icon icon={m.icon} className="size-8 shrink-0 text-[#3d4c5e]" />
+                        )}
+                        <span className="flex flex-col gap-1">
+                          <span className="font-body-alt text-lg tracking-[-0.04em] text-[#3d4c5e]">
+                            {m.label}
+                          </span>
+                          {m.id === "card" && (
+                            <span className="flex items-center gap-1">
+                              <Icon icon="logos:visa" height={16} />
+                              <Icon icon="logos:mastercard" height={16} />
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                    </RadioRow>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  disabled={!method}
+                  onClick={() => complete(2)}
+                  className={doneBtn}
+                >
+                  Done
+                </button>
+              </>
+            ) : maxDone >= 2 && selectedMethod ? (
+              <div className="flex items-center gap-3">
+                {"img" in selectedMethod ? (
+                  <Image
+                    src={selectedMethod.img}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="size-8 shrink-0 object-contain"
+                  />
+                ) : (
+                  <Icon icon={selectedMethod.icon} className="size-8 shrink-0 text-[#3d4c5e]" />
+                )}
+                <span className="font-body-alt text-lg tracking-[-0.04em] text-[#3d4c5e]">
+                  {selectedMethod.label}
+                </span>
+              </div>
+            ) : null}
+          </StepShell>
 
-          <label className="flex items-center gap-5">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="size-6 shrink-0 rounded border border-[#b2bbc6] accent-foreground"
-            />
+          {/* Step 3 — Payment Amount */}
+          <StepShell
+            n={3}
+            title="Payment Amount"
+            onChange={maxDone >= 3 && openStep !== 3 ? () => setOpenStep(3) : undefined}
+          >
+            {openStep === 3 ? (
+              <>
+                <div className="flex flex-col gap-4">
+                  {AMOUNTS.map((a) => (
+                    <RadioRow
+                      key={a.id}
+                      selected={amount === a.id}
+                      onSelect={() => setAmount(a.id)}
+                    >
+                      <span className="flex flex-col gap-2">
+                        <span className="font-body-alt text-lg tracking-[-0.04em] text-[#3d4c5e]">
+                          {a.label}
+                        </span>
+                        <span className="font-body-alt text-base tracking-[-0.04em] text-[#3d4c5e]">
+                          {a.note}
+                        </span>
+                      </span>
+                    </RadioRow>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  disabled={!amount}
+                  onClick={() => complete(3)}
+                  className={doneBtn}
+                >
+                  Done
+                </button>
+              </>
+            ) : maxDone >= 3 && selectedAmount ? (
+              <div className="flex items-center gap-2 font-body-alt tracking-[-0.04em]">
+                <span className="text-base text-[#3d4c5e]">Price to pay</span>
+                <span className="text-xl font-medium text-foreground">
+                  ${selectedAmount.amount}
+                </span>
+                <span className="text-base text-primary-accent">
+                  ({selectedAmount.pct} now)
+                </span>
+              </div>
+            ) : null}
+          </StepShell>
+
+          {/* Agreement */}
+          <div className="flex items-center gap-5">
+            <button
+              type="button"
+              onClick={() => setAgreed((a) => !a)}
+              aria-pressed={agreed}
+              aria-label="Agree to terms and conditions"
+              className={clsx(
+                "flex size-6 shrink-0 items-center justify-center rounded border",
+                agreed ? "border-primary-accent bg-primary-accent" : "border-[#a3adbb]"
+              )}
+            >
+              {agreed && <Icon icon="charm:tick" className="size-4 text-foreground" />}
+            </button>
             <span className="font-body-alt text-lg tracking-[-0.04em] text-[#3d4c5e]">
               I agree to terms &amp; conditions of{" "}
               <span className="underline">booking policy</span>.
             </span>
-          </label>
+          </div>
 
+          {/* Final action */}
           <button
             type="button"
-            disabled={!agreed}
+            disabled={!allDone || !agreed}
             onClick={() => router.push("/checkout/success")}
-            className={
-              agreed
-                ? "w-full rounded-lg bg-foreground px-5 py-3 font-body-alt text-lg font-medium tracking-[-0.04em] text-background transition-transform hover:scale-[1.01] active:scale-95"
-                : "w-full cursor-not-allowed rounded-lg bg-border px-5 py-3 font-body-alt text-lg font-medium tracking-[-0.04em] text-[#909dad]"
-            }
+            className={clsx(
+              "w-full rounded-lg px-5 py-3 font-body-alt text-lg font-medium tracking-[-0.04em] transition-transform",
+              allDone && agreed
+                ? "bg-foreground text-background hover:scale-[1.01] active:scale-95"
+                : "cursor-not-allowed bg-border text-[#909dad]"
+            )}
           >
-            Next
+            {allDone && selectedAmount
+              ? `Continue & pay $${selectedAmount.amount}`
+              : "Next"}
           </button>
         </div>
 
@@ -265,7 +515,7 @@ export default function Checkout() {
               Total Price
             </span>
             <span className="font-body-alt text-xl font-medium tracking-[-0.04em] text-[#2ecc10]">
-              $428
+              ${TOTAL}
             </span>
           </div>
         </div>

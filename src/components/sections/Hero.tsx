@@ -34,7 +34,7 @@ export default function Hero() {
         <motion.h1
           initial={{ y: 48, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 5, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-x-0 top-[28%] z-10 px-6 text-center text-[clamp(2.5rem,8vw,100px)] font-extrabold leading-none tracking-[-0.06em] text-foreground"
         >
           Travel beyond destinations
