@@ -7,6 +7,8 @@ import PopularPackagesGrid from "@/components/sections/PopularPackagesGrid";
 import PageHero from "@/components/sections/PageHero";
 import DestinationsGrid from "@/components/sections/DestinationsGrid";
 import CulturalDayTours from "@/components/sections/CulturalDayTours";
+import DestinationDetail from "@/components/sections/DestinationDetail";
+import PackageDetail from "@/components/sections/PackageDetail";
 import ExperienceSection from "@/components/sections/ExperienceSection";
 import WhyChooseUs from "@/components/sections/WhyChooseUs";
 import DestinationsBento from "@/components/sections/DestinationsBento";
@@ -46,6 +48,8 @@ export const blockRegistry: Record<string, ComponentType<any>> = {
   PackageListing: PopularPackagesGrid,
   DestinationsGrid,
   CulturalDayTours,
+  DestinationDetail,
+  PackageDetail,
   ExperienceSection: ExperienceSection,
   WhyChooseUs: WhyChooseUs,
   BentoGrid: DestinationsBento,
