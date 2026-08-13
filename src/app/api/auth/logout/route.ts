@@ -13,12 +13,18 @@ export async function POST(request: NextRequest) {
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
   if (token) {
     try {
-      await requestAccountsApi("logout/", {
+      const { response: backendResponse, data } = await requestAccountsApi("logout/", {
         method: "POST",
         headers: { Authorization: `Token ${token}` },
       });
+      if (!backendResponse.ok && backendResponse.status !== 401) {
+        return NextResponse.json(data, { status: backendResponse.status });
+      }
     } catch {
-      // Local sign-out still succeeds if the backend is temporarily unavailable.
+      return NextResponse.json(
+        { detail: "Sign out could not be completed. Please try again." },
+        { status: 502 },
+      );
     }
   }
 
@@ -26,4 +32,3 @@ export async function POST(request: NextRequest) {
   response.cookies.delete(AUTH_COOKIE_NAME);
   return response;
 }
-
