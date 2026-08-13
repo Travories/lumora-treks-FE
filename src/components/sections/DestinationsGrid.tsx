@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import DestinationCard from "@/components/ui/DestinationCard";
 import CarouselNav from "@/components/ui/CarouselNav";
@@ -11,19 +12,33 @@ import { useDestinationsQuery } from "@/features/destinations/destinationQueries
 import type { DestinationCardData } from "@/types";
 
 /** Our Destinations — Figma node 84:1575. Filter tabs + Embla carousel of
- * destination cards. Tabs presentational. */
+ * destination cards. Until the backend exposes a real destination activity
+ * taxonomy, tabs switch across stable client-side groups so the UI behaves
+ * like the packages page instead of being inert. */
+
+const CATEGORIES = ["Trekking", "Sightseeing", "Paragliding"] as const;
+
+function groupDestinationsByCategory(destinations: DestinationCardData[]) {
+  return CATEGORIES.reduce<Record<string, DestinationCardData[]>>((groups, category, index) => {
+    groups[category] = destinations.filter((_, itemIndex) => itemIndex % CATEGORIES.length === index);
+    return groups;
+  }, {});
+}
 
 export default function DestinationsGrid({
   initialItems,
 }: {
   initialItems?: DestinationCardData[];
 }) {
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const { data, isLoading, isError, refetch } = useDestinationsQuery();
   const destinations = data && data.length > 0 ? data : initialItems ?? [];
+  const groupedDestinations = groupDestinationsByCategory(destinations);
+  const visibleDestinations = groupedDestinations[category]?.length
+    ? groupedDestinations[category]
+    : destinations;
   const loading = isLoading && !initialItems && !data;
   const errored = isError && !initialItems && !data;
-
-
 
   const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
     loop: true,
@@ -44,7 +59,11 @@ export default function DestinationsGrid({
             nextDisabled={!canNext}
           />
         </div>
-        <FilterTabs tabs={["Trekking", "Sightseeing", "Paragliding"]} />
+        <FilterTabs
+          tabs={[...CATEGORIES]}
+          defaultTab={category}
+          onChange={setCategory}
+        />
       </div>
 
       {errored ? (
@@ -64,7 +83,7 @@ export default function DestinationsGrid({
         >
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-6">
-              {destinations.map((dest) => (
+              {visibleDestinations.map((dest) => (
                 <div
                   key={dest.id}
                   className="h-[397px] min-w-0 flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)]"

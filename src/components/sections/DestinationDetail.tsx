@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import StarRating from "@/components/ui/StarRating";
@@ -89,12 +90,57 @@ export default function DestinationDetail({
   ctaLabel?: string;
   destination?: CmsDestinationDetail;
 } = {}) {
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
   const title = destination?.title || "Kathmandu Durbar Square";
   const overview = destination?.description || destination?.subtitle ||
     "Lumbini, located in Nepal, holds profound significance as a UNESCO World Heritage Site.";
   const destinationImage = destination?.image?.src || destination?.image?.url;
+  const galleryItems = [
+    destinationImage || GALLERY[0],
+    ...GALLERY.slice(1),
+  ].map((src, index) => ({
+    src,
+    caption: `${title} photo ${index + 1}`,
+  }));
+  const currentGalleryIndex = activeGalleryIndex ?? 0;
+  const activeGalleryItem = activeGalleryIndex === null ? null : galleryItems[activeGalleryIndex];
+
+  useEffect(() => {
+    if (activeGalleryIndex === null) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setActiveGalleryIndex(null);
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        setActiveGalleryIndex((current) => {
+          if (current === null) return current;
+          return (current + 1) % galleryItems.length;
+        });
+      }
+
+      if (event.key === "ArrowLeft") {
+        setActiveGalleryIndex((current) => {
+          if (current === null) return current;
+          return (current - 1 + galleryItems.length) % galleryItems.length;
+        });
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [activeGalleryIndex, galleryItems.length]);
+
   return (
-    <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 pt-6 sm:px-12 lg:px-20">
+    <>
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-6 pt-6 sm:px-12 lg:px-20">
       {/* Breadcrumb + Header */}
       <header className="flex flex-col gap-2">
         <nav className="flex items-center gap-2 text-base" aria-label="Breadcrumb">
@@ -181,30 +227,66 @@ export default function DestinationDetail({
         {/* Gallery */}
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex h-[335px] gap-2">
-            <GalleryImg src={destinationImage || GALLERY[0]} className="flex-1" priority />
+            <GalleryButton
+              src={galleryItems[0].src}
+              alt={galleryItems[0].caption}
+              className="flex-1"
+              priority
+              onClick={() => setActiveGalleryIndex(0)}
+            />
             <div className="flex flex-1 flex-col gap-2">
-              <GalleryImg src={GALLERY[1]} className="flex-1" />
-              <GalleryImg src={GALLERY[2]} className="flex-1" />
+              <GalleryButton
+                src={galleryItems[1].src}
+                alt={galleryItems[1].caption}
+                className="flex-1"
+                onClick={() => setActiveGalleryIndex(1)}
+              />
+              <GalleryButton
+                src={galleryItems[2].src}
+                alt={galleryItems[2].caption}
+                className="flex-1"
+                onClick={() => setActiveGalleryIndex(2)}
+              />
             </div>
-            <GalleryImg src={GALLERY[3]} className="flex-1" />
+            <GalleryButton
+              src={galleryItems[3].src}
+              alt={galleryItems[3].caption}
+              className="flex-1"
+              onClick={() => setActiveGalleryIndex(3)}
+            />
           </div>
           <div className="flex gap-4">
-            <GalleryImg src={GALLERY[4]} className="h-[125px] flex-1" />
-            <GalleryImg src={GALLERY[5]} className="h-[125px] flex-1" />
-            <div className="relative h-[125px] flex-1 overflow-hidden rounded-lg">
+            <GalleryButton
+              src={galleryItems[4].src}
+              alt={galleryItems[4].caption}
+              className="h-[125px] flex-1"
+              onClick={() => setActiveGalleryIndex(4)}
+            />
+            <GalleryButton
+              src={galleryItems[5].src}
+              alt={galleryItems[5].caption}
+              className="h-[125px] flex-1"
+              onClick={() => setActiveGalleryIndex(5)}
+            />
+            <button
+              type="button"
+              onClick={() => setActiveGalleryIndex(6)}
+              className="group relative h-[125px] flex-1 overflow-hidden rounded-lg text-left"
+              aria-label={`Open photo 7 of ${galleryItems.length}`}
+            >
               <Image
-                src={GALLERY[6]}
-                alt=""
+                src={galleryItems[6].src}
+                alt={galleryItems[6].caption}
                 fill
                 sizes="200px"
-                className="object-cover"
+                className="object-cover transition duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 grid place-items-center bg-black/50">
                 <span className="font-body-alt text-2xl tracking-[-0.02em] text-white">
-                  + 10 Photos
+                  View Photos
                 </span>
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </motion.section>
@@ -346,29 +428,129 @@ export default function DestinationDetail({
           </div>
         </div>
       </section>}
-    </div>
+      </div>
+
+      {activeGalleryItem && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${title} gallery`}
+        >
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white sm:px-6">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium tracking-[0.02em] text-white/70">
+                  {currentGalleryIndex + 1} / {galleryItems.length}
+                </span>
+                <span className="line-clamp-1 text-sm font-medium">{title}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveGalleryIndex(null)}
+                className="rounded-full p-2 text-white transition hover:bg-white/10"
+                aria-label="Close gallery"
+              >
+                <Icon icon="iconoir:xmark" className="size-6" />
+              </button>
+            </div>
+
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="relative flex min-h-0 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+                <button
+                  type="button"
+                  onClick={() => setActiveGalleryIndex((currentGalleryIndex - 1 + galleryItems.length) % galleryItems.length)}
+                  className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 p-3 text-white transition hover:bg-black/65"
+                  aria-label="Previous photo"
+                >
+                  <Icon icon="iconoir:nav-arrow-left" className="size-6" />
+                </button>
+
+                <div className="relative h-full max-h-[78vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-black">
+                  <Image
+                    src={activeGalleryItem.src}
+                    alt={activeGalleryItem.caption}
+                    fill
+                    sizes="100vw"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveGalleryIndex((currentGalleryIndex + 1) % galleryItems.length)}
+                  className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 p-3 text-white transition hover:bg-black/65"
+                  aria-label="Next photo"
+                >
+                  <Icon icon="iconoir:nav-arrow-right" className="size-6" />
+                </button>
+              </div>
+
+              <aside className="flex min-h-0 flex-col border-t border-white/10 bg-[#111111] text-white lg:border-l lg:border-t-0">
+                <div className="border-b border-white/10 px-5 py-4">
+                  <p className="text-base font-semibold">{activeGalleryItem.caption}</p>
+                  <p className="mt-1 text-sm text-white/60">Browse all destination photos</p>
+                </div>
+                <div className="grid min-h-0 grid-cols-3 gap-2 overflow-y-auto p-4 sm:grid-cols-4 lg:grid-cols-3">
+                  {galleryItems.map((item, index) => (
+                    <button
+                      key={`${item.src}-${index}`}
+                      type="button"
+                      onClick={() => setActiveGalleryIndex(index)}
+                      className={
+                        index === activeGalleryIndex
+                          ? "relative aspect-square overflow-hidden rounded-xl ring-2 ring-white"
+                          : "relative aspect-square overflow-hidden rounded-xl opacity-70 transition hover:opacity-100"
+                      }
+                      aria-label={`View photo ${index + 1}`}
+                    >
+                      <Image
+                        src={item.src}
+                        alt={item.caption}
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-function GalleryImg({
+function GalleryButton({
   src,
+  alt,
   className,
   priority,
+  onClick,
 }: {
   src: string;
+  alt: string;
   className?: string;
   priority?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-lg bg-[#909dad] ${className ?? ""}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-lg bg-[#909dad] text-left ${className ?? ""}`}
+    >
       <Image
         src={src}
-        alt=""
+        alt={alt}
         fill
         sizes="(max-width: 1024px) 50vw, 320px"
-        className="object-cover"
+        className="object-cover transition duration-300 group-hover:scale-105"
         priority={priority}
       />
-    </div>
+    </button>
   );
 }
