@@ -4,7 +4,7 @@ import type { DestinationCardData } from "@/types";
 
 const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
 export type DestinationQueryParams = {
-  category?: string;
+  region?: string;
 };
 
 type CmsDestination = {
@@ -22,7 +22,8 @@ export async function fetchDestinations(
   params?: DestinationQueryParams
 ): Promise<DestinationCardData[]> {
   const queryParams = new URLSearchParams();
-  if (params?.category) queryParams.set("category", params.category);
+  queryParams.set("featured", "true");
+  if (params?.region) queryParams.set("region", params.region);
 
   try {
     const endpoint = queryParams.size > 0
@@ -39,7 +40,7 @@ export async function fetchDestinations(
         slug: item.slug,
         title: item.title,
         subtitle: item.subtitle ?? "",
-        image: item.image?.src ?? item.image?.url ?? "/images/destination-card-default.png",
+        image: item.image?.src ?? item.image?.url ?? "",
         href: item.href ?? `/destinations/${item.slug}`,
         price: item.starting_price == null ? undefined : `${item.currency ?? "USD"} ${item.starting_price}`,
       }));

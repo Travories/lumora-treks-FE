@@ -52,14 +52,13 @@ export default function DestinationsBento({
   const { data: apiDestinations, isLoading } = useDestinationsQuery();
 
   const cmsItems = resolved_items && resolved_items.length > 0 ? resolved_items : items;
-  const cards: BentoItem[] = cmsItems && cmsItems.length > 0
-    ? cmsItems.slice(0, 5)
-    : (apiDestinations ?? []).slice(0, 5).map((d) => ({
+  const apiCards: BentoItem[] = (apiDestinations ?? []).slice(0, 5).map((d) => ({
         title: d.title,
         image: { url: d.image },
         href: d.href || `/destinations/${d.slug || d.id}`,
         price: d.price,
       }));
+  const cards: BentoItem[] = apiCards.length > 0 ? apiCards : (cmsItems || []).slice(0, 5);
 
   const showSkeleton = isLoading && !cmsItems && cards.length === 0;
 

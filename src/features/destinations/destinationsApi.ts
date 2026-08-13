@@ -19,7 +19,7 @@ function adaptCmsDestination(d: CmsDestination): DestinationCardData {
     id: String(d.id),
     slug: d.slug,
     title: d.title,
-    image: d.image?.src || d.image?.url || "/images/destination-card-default.png",
+    image: d.image?.src || d.image?.url || "",
     href: d.href || `/destinations/${d.slug}`,
     price: d.starting_price == null ? undefined : `${d.currency || "USD"} ${d.starting_price}`,
   };

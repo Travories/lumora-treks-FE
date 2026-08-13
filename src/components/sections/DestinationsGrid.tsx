@@ -1,31 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import DestinationCard from "@/components/ui/DestinationCard";
 import CarouselNav from "@/components/ui/CarouselNav";
-import FilterTabs from "@/components/ui/FilterTabs";
 import CardSkeleton from "@/components/ui/CardSkeleton";
 import QueryError from "@/components/ui/QueryError";
 import { useCarousel } from "@/hooks/useCarousel";
 import { useDestinationsQuery } from "@/features/destinations/destinationQueries";
 import type { DestinationCardData } from "@/types";
 
-/** Our Destinations — Figma node 84:1575. Filter tabs + Embla carousel of
- * destination cards. Tabs filter via the destinations API category param. */
-
-const CATEGORIES = ["Trekking", "Sightseeing", "Paragliding"] as const;
+/** CMS destination carousel. Destinations are places, not package categories. */
 
 export default function DestinationsGrid({
   initialItems,
 }: {
   initialItems?: DestinationCardData[];
 }) {
-  const [category, setCategory] = useState<string>(CATEGORIES[0]);
-  const { data, isLoading, isError, refetch } = useDestinationsQuery({ category });
-  const destinations = data ?? (category === CATEGORIES[0] ? initialItems ?? [] : []);
-  const loading = isLoading && !data && !(category === CATEGORIES[0] && initialItems);
-  const errored = isError && !data && !(category === CATEGORIES[0] && initialItems);
+  const { data, isLoading, isError, refetch } = useDestinationsQuery();
+  const destinations = data ?? initialItems ?? [];
+  const loading = isLoading && !data && !initialItems;
+  const errored = isError && !data && !initialItems;
 
   const { emblaRef, scrollPrev, scrollNext, canPrev, canNext } = useCarousel({
     loop: true,
@@ -46,11 +40,6 @@ export default function DestinationsGrid({
             nextDisabled={!canNext}
           />
         </div>
-        <FilterTabs
-          tabs={[...CATEGORIES]}
-          defaultTab={category}
-          onChange={setCategory}
-        />
       </div>
 
       {errored ? (
@@ -63,7 +52,7 @@ export default function DestinationsGrid({
         </div>
       ) : destinations.length === 0 ? (
         <p className="py-16 text-center font-body-alt text-lg text-text-secondary">
-          No destinations found for {category}.
+          No destinations are available yet.
         </p>
       ) : (
         <motion.div

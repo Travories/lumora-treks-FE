@@ -32,8 +32,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-/** Destination detail page (`/destinations/[slug]`) — Figma node 141:3109.
- * Content is dummy for now (Kathmandu Durbar Square); wires to Wagtail later. */
+/** Destination detail page (`/destinations/[slug]`) backed by the catalog CMS. */
 export default async function DestinationDetailPage({
   params,
 }: Params) {

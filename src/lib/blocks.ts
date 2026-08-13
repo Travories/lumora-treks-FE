@@ -96,6 +96,7 @@ export type CmsDestinationDetail = {
   image: CmsImage;
   region: string;
   layout: string;
+  highlights: string[];
   href?: string;
   packages: Array<{
     id: number | string;
@@ -105,6 +106,8 @@ export type CmsDestinationDetail = {
     image: CmsImage;
     price?: number;
     currency?: string;
+    duration?: string;
+    href?: string;
   }>;
 };
 

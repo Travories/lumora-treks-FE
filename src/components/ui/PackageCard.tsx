@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
  * Figma: Packages Section (84:938) destination card. Optional `href` makes it a
  * link to the package detail page. */
 export type PackageCardProps = {
-  image: string;
+  image?: string;
   title: string;
   description: string;
   price: string;
@@ -26,13 +26,13 @@ export default function PackageCard({
 }: PackageCardProps) {
   const card = (
     <div className="relative flex h-[397px] flex-col justify-end overflow-hidden rounded-2xl p-6">
-      <Image
+      {image && <Image
         src={image}
         alt={title}
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         className="object-cover"
-      />
+      />}
       <div className="relative flex w-full flex-col gap-4 rounded-lg bg-white p-6">
         <h3 className="truncate text-lg font-bold tracking-[-0.04em] text-foreground">
           {title}

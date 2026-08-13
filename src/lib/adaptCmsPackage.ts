@@ -25,7 +25,7 @@ export function adaptCmsPackage(pkg: CmsPackage): PackageCardData {
   return {
     id: String(pkg.id),
     title: pkg.title,
-    image: pkg.image?.url || "/images/destination-card-default.png",
+    image: pkg.image?.url || "",
     description: pkg.summary || "",
     price: pkg.price != null ? `${formatCurrency(pkg.currency)}${pkg.price} per person` : "",
     duration: pkg.duration || "",

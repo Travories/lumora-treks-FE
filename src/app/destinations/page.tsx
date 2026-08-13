@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import PageHero from "@/components/sections/PageHero";
 import DestinationsGrid from "@/components/sections/DestinationsGrid";
-import IntroStats from "@/components/sections/IntroStats";
-import ExperienceSection from "@/components/sections/ExperienceSection";
 import BlockRenderer from "@/components/BlockRenderer";
 import { getPageByPath } from "@/lib/cms";
 
@@ -14,8 +11,6 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 import { destinationsQueryOptions } from "@/features/destinations/destinationQueries";
-
-const DEFAULT_DESTINATION_CATEGORY = "Trekking";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageByPath("/destinations");
@@ -32,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DestinationsPage() {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(
-    destinationsQueryOptions({ category: DEFAULT_DESTINATION_CATEGORY })
+    destinationsQueryOptions()
   );
   const page = await getPageByPath("/destinations");
 
@@ -42,23 +37,9 @@ export default async function DestinationsPage() {
         <Navbar />
         {page?.body && page.body.length > 0 ? (
           <BlockRenderer blocks={page.body} />
-        ) : (
-          <>
-            <PageHero
-              title="Our Destinations"
-              image="/images/destinations-hero.png"
-              imageAlt="Nepal mountain landscape"
-              imageWidth={499}
-              imageHeight={457}
-            />
-            <DestinationsGrid />
-            <IntroStats />
-            <ExperienceSection />
-          </>
-        )}
+        ) : <DestinationsGrid />}
       </main>
       <Footer />
     </HydrationBoundary>
   );
 }
-
