@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
@@ -13,37 +12,8 @@ function displayName(user: TravelerProfile) {
   return user.full_name.trim() || user.email.split("@")[0] || "Traveler";
 }
 
-function initials(user: TravelerProfile) {
-  const parts = displayName(user).split(/\s+/).filter(Boolean);
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
-function Avatar({ user, size = 32 }: { user: TravelerProfile; size?: number }) {
-  if (user.avatar_url) {
-    return (
-      <Image
-        src={user.avatar_url}
-        alt=""
-        width={size}
-        height={size}
-        unoptimized
-        className="rounded-full object-cover"
-      />
-    );
-  }
-
-  return (
-    <span
-      aria-hidden
-      className="flex shrink-0 items-center justify-center rounded-full bg-primary-accent font-body-alt text-xs font-bold text-foreground"
-      style={{ width: size, height: size }}
-    >
-      {initials(user)}
-    </span>
-  );
+function firstName(user: TravelerProfile) {
+  return displayName(user).split(/\s+/)[0] || "Traveler";
 }
 
 export default function AuthNavAction({
@@ -125,10 +95,9 @@ export default function AuthNavAction({
     return (
       <div className="mt-2 rounded-2xl border border-border bg-surface p-3">
         <div className="flex items-center gap-3">
-          <Avatar user={user} size={40} />
           <div className="min-w-0 flex-1">
             <p className="truncate font-body-alt text-base font-semibold text-foreground">
-              {displayName(user)}
+              Hi, {firstName(user)}
             </p>
             <p className="truncate font-body-alt text-xs text-text-secondary">{user.email}</p>
           </div>
@@ -168,10 +137,9 @@ export default function AuthNavAction({
         onClick={() => setMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
-        className="flex items-center gap-2 rounded-full bg-foreground py-1.5 pl-1.5 pr-3 font-body-alt text-sm font-semibold text-background transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 font-body-alt text-sm font-semibold text-background transition-transform hover:scale-[1.02] active:scale-[0.98]"
       >
-        <Avatar user={user} />
-        <span className="max-w-24 truncate">{displayName(user).split(" ")[0]}</span>
+        <span className="max-w-32 truncate">Hi, {firstName(user)}</span>
         <Icon icon="iconoir:nav-arrow-down" className="size-4" />
       </button>
 
@@ -185,14 +153,11 @@ export default function AuthNavAction({
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="absolute right-0 top-[calc(100%+10px)] z-[70] w-72 overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-[0_18px_60px_rgba(30,30,30,0.16)]"
           >
-            <div className="flex items-center gap-3 px-2 py-2">
-              <Avatar user={user} size={44} />
-              <div className="min-w-0">
-                <p className="truncate font-body-alt text-base font-semibold text-foreground">
-                  {displayName(user)}
-                </p>
-                <p className="truncate font-body-alt text-xs text-text-secondary">{user.email}</p>
-              </div>
+            <div className="min-w-0 px-2 py-2">
+              <p className="truncate font-body-alt text-base font-semibold text-foreground">
+                Hi, {firstName(user)}
+              </p>
+              <p className="truncate font-body-alt text-xs text-text-secondary">{user.email}</p>
             </div>
 
             {!user.onboarding_complete && (

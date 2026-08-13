@@ -3,7 +3,6 @@ export type TravelerProfile = {
   email: string;
   role: "USER" | "ADMIN";
   full_name: string;
-  avatar_url: string;
   interests: string[];
   traveler_type: string;
   onboarding_complete: boolean;

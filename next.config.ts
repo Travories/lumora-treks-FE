@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lumora-treks-fe.vercel.app" },
       { protocol: "https", hostname: "garage.travories.com" },
       { protocol: "https", hostname: "travories-public.files.travories.com" },
-      { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "http", hostname: "localhost", port: "8000" },
       { protocol: "http", hostname: "127.0.0.1", port: "8000" },
     ],
