@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import StarRating from "@/components/ui/StarRating";
-import ReviewCard, { type Review } from "@/components/ui/ReviewCard";
+import PackageReviews from "@/components/reviews/PackageReviews";
 import type { CmsPackageDetail } from "@/lib/blocks";
 
 /** Package detail — Figma node 150:10819 ("Main Content"). Distinct from the
@@ -16,32 +16,6 @@ const GALLERY_LARGE = ["/images/kds-1.png", "/images/kds-2.png"];
 const GALLERY_SMALL = ["/images/kds-3.png", "/images/kds-4.png", "/images/kds-5.png"];
 
 const DAYS = ["Day 1", "Day 2", "Day 3"];
-
-const BREAKDOWN = [
-  { label: "Excellent", count: 6 },
-  { label: "Very Good", count: 3 },
-  { label: "Average", count: 2 },
-  { label: "Poor", count: 2 },
-  { label: "Terrible", count: 0 },
-];
-
-const REVIEWS: Review[] = [
-  {
-    name: "John Harris",
-    avatar: "/images/avatar-1.png",
-    timeAgo: "1 hour ago",
-    rating: 2,
-    text: "Good Experience",
-  },
-  {
-    name: "Prajwol Ghimire",
-    avatar: "/images/avatar-1.png",
-    timeAgo: "1 hour ago",
-    rating: 2,
-    text: '"I\'ve been impressed with the quality of service provided by this. They have exceeded my expectations and delivered exceptional results. Highly recommended!"',
-    reply: "yes",
-  },
-];
 
 const sectionHeading =
   "text-2xl font-semibold tracking-[-0.04em] text-foreground";
@@ -85,16 +59,6 @@ export default function PackageDetail({
   const gallerySmall = galleryItems.slice(2, 5);
   const itinerary = packageData?.itinerary?.length ? packageData.itinerary : null;
   const dayLabels = itinerary?.map((item) => item.day_label) || DAYS;
-  const reviews = packageData
-    ? packageData.testimonials.map((item) => ({
-        name: item.author_name,
-        avatar: item.avatar?.src || item.avatar?.url || "/images/avatar-1.png",
-        timeAgo: "",
-        rating: item.rating,
-        text: item.quote,
-      }))
-    : REVIEWS;
-  const maxCount = Math.max(...BREAKDOWN.map((b) => b.count), 1);
   const currentGalleryIndex = activeGalleryIndex ?? 0;
   const activeGalleryItem = activeGalleryIndex === null ? null : galleryItems[activeGalleryIndex];
 
@@ -155,9 +119,9 @@ export default function PackageDetail({
             <span className="font-medium text-text-secondary">{rating.toFixed(1)}</span>
             <StarRating rating={rating} starSize={20} />
             <span className="size-1 rounded-full bg-text-secondary" />
-            <button type="button" className="text-lg text-text-secondary underline">
+            <a href="#reviews" className="text-lg text-text-secondary underline underline-offset-4">
               ({reviewCount} Reviews)
-            </button>
+            </a>
           </div>
         </div>
 
@@ -386,57 +350,20 @@ export default function PackageDetail({
           </div>
         </div>
 
-        {/* Reviews & Ratings */}
-        {(!packageData || reviews.length > 0) && <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className={sectionHeading}>Reviews &amp; Ratings</h2>
-            <button
-              type="button"
-              className="rounded-lg border border-border bg-background p-3 text-base font-semibold tracking-[-0.03em] text-text-secondary"
-            >
-              Write a review
-            </button>
-          </div>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            {/* Sidebar */}
-            <aside className="flex w-full flex-col gap-5 lg:w-[440px]">
-              <div className="flex h-[45px] items-center gap-2 rounded-lg border border-border bg-surface px-4">
-                <Icon icon="iconoir:search" className="size-[18px] text-[#a3adbb]" />
-                <span className="font-body-alt text-base tracking-[-0.04em] text-[#a3adbb]">Search Here</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-semibold text-text-secondary">{rating.toFixed(1)}</span>
-                <StarRating rating={rating} starSize={24} />
-                <span className="text-lg font-semibold text-text-secondary">({reviewCount})</span>
-              </div>
-              <div className="flex flex-col gap-4">
-                {BREAKDOWN.map((b) => (
-                  <div key={b.label} className="flex items-center justify-between gap-3">
-                    <span className="w-20 shrink-0 text-base font-semibold tracking-[-0.02em] text-text-secondary">
-                      {b.label}
-                    </span>
-                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-border">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${(b.count / maxCount) * 100}%` }}
-                      />
-                    </div>
-                    <span className="w-4 shrink-0 text-right text-base font-semibold text-text-secondary">
-                      {b.count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </aside>
-
-            {/* Reviews list */}
-            <div className="flex flex-1 flex-col gap-4">
-              {reviews.map((r) => (
-                <ReviewCard key={r.name} {...r} />
-              ))}
-            </div>
-          </div>
-        </div>}
+        {packageData && (
+          <PackageReviews
+            packageId={packageData.id}
+            packageSlug={packageData.slug}
+            initialAverage={rating}
+            initialCount={reviewCount}
+            testimonials={packageData.testimonials.map((item) => ({
+              id: item.id,
+              author_name: item.author_name,
+              rating: item.rating,
+              quote: item.quote,
+            }))}
+          />
+        )}
       </section>
 
       {activeGalleryItem && (

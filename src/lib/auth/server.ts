@@ -69,6 +69,22 @@ export async function requestAccountsApi(
   return { response, data };
 }
 
+export async function requestBackendApi(path: string, init: RequestInit = {}) {
+  const response = await fetch(`${backendBaseUrl()}${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      ...init.headers,
+    },
+  });
+
+  const data: unknown = response.status === 204 ? null : await response.json().catch(() => ({
+    detail: "The service returned an invalid response.",
+  }));
+  return { response, data };
+}
+
 export function accountServiceUnavailable() {
   return {
     detail: "We could not reach the account service. Please try again.",
