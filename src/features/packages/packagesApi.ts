@@ -22,13 +22,14 @@ export const packagesApi = apiSlice.injectEndpoints({
     }),
     getPackages: builder.query<PackageListResult, SelectPackagesParams | void>({
       query: (arg) => {
-        const { category, location, page = 1, pageSize = 6 } = arg ?? {};
+        const { category, location, date, page = 1, pageSize = 6 } = arg ?? {};
         const params = new URLSearchParams({
           limit: String(pageSize),
           offset: String((page - 1) * pageSize),
         });
         if (location) params.set("search", location);
         else if (category) params.set("category", category);
+        if (date) params.set("date", date);
         return `packages/?${params.toString()}`;
       },
       transformResponse: (res: CmsListResponse<CmsPackage>, _meta, arg): PackageListResult => {

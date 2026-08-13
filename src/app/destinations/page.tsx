@@ -15,6 +15,8 @@ import {
 } from "@tanstack/react-query";
 import { destinationsQueryOptions } from "@/features/destinations/destinationQueries";
 
+const DEFAULT_DESTINATION_CATEGORY = "Trekking";
+
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageByPath("/destinations");
   return {
@@ -29,7 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
  * DestinationsGrid. Reuses PageHero, IntroStats, ExperienceSection. */
 export default async function DestinationsPage() {
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery(destinationsQueryOptions());
+  await queryClient.prefetchQuery(
+    destinationsQueryOptions({ category: DEFAULT_DESTINATION_CATEGORY })
+  );
   const page = await getPageByPath("/destinations");
 
   return (
@@ -57,5 +61,4 @@ export default async function DestinationsPage() {
     </HydrationBoundary>
   );
 }
-
 

@@ -54,6 +54,7 @@ export const CULTURAL_TOURS: PackageCardData[] = [
 export type SelectPackagesParams = {
   category?: string;
   location?: string;
+  date?: string;
   page?: number;
   pageSize?: number;
 };

@@ -32,10 +32,11 @@ export default async function PackagesPage({
 }: {
   searchParams: Promise<{ location?: string; date?: string }>;
 }) {
-  const { location } = await searchParams;
+  const { location, date } = await searchParams;
   const queryParams = {
     category: location ? undefined : "Trekking",
     location,
+    date,
     page: 1,
     pageSize: 6,
   };
@@ -57,7 +58,7 @@ export default async function PackagesPage({
         ) : (
           <>
             <PackagesHero />
-            <PopularPackagesGrid searchLocation={location} />
+            <PopularPackagesGrid searchLocation={location} searchDate={date} />
             <IntroStats />
             <CulturalDayTours />
           </>

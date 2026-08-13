@@ -2,8 +2,10 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { CmsImage } from "@/lib/blocks";
 import type { DestinationCardData } from "@/types";
 
-
 const WAGTAIL_URL = process.env.NEXT_PUBLIC_WAGTAIL_URL || "http://localhost:8000";
+export type DestinationQueryParams = {
+  category?: string;
+};
 
 type CmsDestination = {
   id: number | string;
@@ -14,9 +16,17 @@ type CmsDestination = {
   href?: string;
 };
 
-export async function fetchDestinations(): Promise<DestinationCardData[]> {
+export async function fetchDestinations(
+  params?: DestinationQueryParams
+): Promise<DestinationCardData[]> {
+  const queryParams = new URLSearchParams();
+  if (params?.category) queryParams.set("category", params.category);
+
   try {
-    const res = await fetch(`${WAGTAIL_URL}/api/v2/destinations/`, {
+    const endpoint = queryParams.size > 0
+      ? `${WAGTAIL_URL}/api/v2/destinations/?${queryParams.toString()}`
+      : `${WAGTAIL_URL}/api/v2/destinations/`;
+    const res = await fetch(endpoint, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
@@ -38,13 +48,12 @@ export async function fetchDestinations(): Promise<DestinationCardData[]> {
   }
 }
 
-
-export const destinationsQueryOptions = () =>
+export const destinationsQueryOptions = (params?: DestinationQueryParams) =>
   queryOptions({
-    queryKey: ["destinations"],
-    queryFn: fetchDestinations,
+    queryKey: ["destinations", params],
+    queryFn: () => fetchDestinations(params),
   });
 
-export function useDestinationsQuery() {
-  return useQuery(destinationsQueryOptions());
+export function useDestinationsQuery(params?: DestinationQueryParams) {
+  return useQuery(destinationsQueryOptions(params));
 }

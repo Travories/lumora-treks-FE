@@ -22,9 +22,11 @@ const PAGE_SIZE = 6;
 
 export default function PopularPackagesGrid({
   searchLocation,
+  searchDate,
   initialData,
 }: {
   searchLocation?: string;
+  searchDate?: string;
   initialData?: PackageListResult;
 }) {
   const router = useRouter();
@@ -33,15 +35,17 @@ export default function PopularPackagesGrid({
 
   // Reset to page 1 the moment a new search arrives — render-phase, so the query
   // never runs with a stale page (no empty-state flash).
-  const [prevSearch, setPrevSearch] = useState(searchLocation);
-  if (prevSearch !== searchLocation) {
-    setPrevSearch(searchLocation);
+  const searchKey = `${searchLocation || ""}|${searchDate || ""}`;
+  const [prevSearchKey, setPrevSearchKey] = useState(searchKey);
+  if (prevSearchKey !== searchKey) {
+    setPrevSearchKey(searchKey);
     setPage(1);
   }
 
   const { data, isLoading, isError, refetch } = usePackagesQuery({
     category: searchLocation ? undefined : category,
     location: searchLocation,
+    date: searchDate,
     page,
     pageSize: PAGE_SIZE,
   });
@@ -84,6 +88,27 @@ export default function PopularPackagesGrid({
             <span className="font-semibold text-foreground">
               “{searchLocation}”
             </span>{" "}
+            {searchDate ? (
+              <>
+                on{" "}
+                <span className="font-semibold text-foreground">
+                  {searchDate}
+                </span>{" "}
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => router.push("/packages")}
+              className="text-primary underline"
+            >
+              clear
+            </button>
+          </p>
+        )}
+        {!searchLocation && searchDate && (
+          <p className="font-body-alt text-base text-text-secondary">
+            Showing results for{" "}
+            <span className="font-semibold text-foreground">{searchDate}</span>{" "}
             <button
               type="button"
               onClick={() => router.push("/packages")}
@@ -120,7 +145,8 @@ export default function PopularPackagesGrid({
       ) : (
         <p className="py-16 text-center font-body-alt text-lg text-text-secondary">
           No packages found
-          {searchLocation ? ` for “${searchLocation}”` : ""}.
+          {searchLocation ? ` for “${searchLocation}”` : ""}
+          {!searchLocation && searchDate ? ` for ${searchDate}` : ""}.
         </p>
       )}
 
