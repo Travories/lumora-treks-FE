@@ -54,7 +54,7 @@ export default function AuthNavAction({
   onAction?: () => void;
 }) {
   const pathname = usePathname();
-  const { status, user, logout, openOnboarding } = useAuth();
+  const { status, user, logout, openOnboarding, refreshSession } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const joinHref = `/join?callbackUrl=${encodeURIComponent(pathname || "/")}`;
@@ -83,6 +83,24 @@ export default function AuthNavAction({
         aria-label="Loading account"
         className={mobile ? "h-12 w-full animate-pulse rounded-full bg-border" : "hidden h-10 w-32 animate-pulse rounded-full bg-border lg:block"}
       />
+    );
+  }
+
+  if (status === "unavailable") {
+    return (
+      <button
+        type="button"
+        onClick={() => void refreshSession()}
+        title="Account service unavailable. Try again."
+        className={
+          mobile
+            ? "mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-6 py-3.5 font-body-alt text-base font-semibold text-foreground"
+            : "hidden shrink-0 items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5 font-body-alt text-sm font-semibold text-foreground lg:inline-flex"
+        }
+      >
+        <Icon icon="iconoir:refresh-double" className="size-5" />
+        Retry account
+      </button>
     );
   }
 
@@ -210,4 +228,3 @@ export default function AuthNavAction({
     </div>
   );
 }
-

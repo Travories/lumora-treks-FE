@@ -15,7 +15,7 @@ import type {
   TravelerProfile,
 } from "@/features/account/types";
 
-type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+type AuthStatus = "loading" | "authenticated" | "unauthenticated" | "unavailable";
 
 type AuthContextValue = {
   status: AuthStatus;
@@ -25,6 +25,7 @@ type AuthContextValue = {
   completeOnboarding: (input: OnboardingInput) => Promise<TravelerProfile>;
   dismissOnboarding: () => void;
   openOnboarding: () => void;
+  refreshSession: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -64,31 +65,37 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TravelerProfile | null>(null);
   const [dismissedUserId, setDismissedUserId] = useState<number | null>(null);
 
-  useEffect(() => {
-    let active = true;
-
-    fetch("/api/auth/me", { cache: "no-store" })
-      .then(async (response) => {
-        if (!active) return;
-        if (!response.ok) {
-          setUser(null);
-          setStatus("unauthenticated");
-          return;
-        }
-        const data = (await response.json()) as AuthUserResponse;
-        setUser(data.user);
-        setStatus("authenticated");
-      })
-      .catch(() => {
-        if (!active) return;
+  const refreshSession = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/me", { cache: "no-store" });
+      if (response.status === 401 || response.status === 403) {
         setUser(null);
         setStatus("unauthenticated");
-      });
+        return;
+      }
+      if (!response.ok) {
+        setStatus("unavailable");
+        return;
+      }
+      const data = (await response.json()) as AuthUserResponse;
+      setUser(data.user);
+      setStatus("authenticated");
+    } catch {
+      setStatus("unavailable");
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadSession = async () => {
+      if (active) await refreshSession();
+    };
+    void loadSession();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshSession]);
 
   const signInWithGoogle = useCallback(async (credential: string) => {
     const response = await fetch("/api/auth/google", {
@@ -156,6 +163,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       dismissOnboarding,
       openOnboarding,
+      refreshSession,
       logout,
     }),
     [
@@ -166,6 +174,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       dismissOnboarding,
       openOnboarding,
+      refreshSession,
       logout,
     ],
   );
