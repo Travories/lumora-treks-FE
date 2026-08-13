@@ -20,11 +20,10 @@ export default function PackageDetail({
   packageData,
 }: {
   reserveHref?: string;
-  packageData?: CmsPackageDetail;
-} = {}) {
+  packageData: CmsPackageDetail;
+}) {
   const [day, setDay] = useState(0);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
-  if (!packageData) return null;
   const title = packageData.title;
   const rating = packageData.rating;
   const reviewCount = packageData.review_count;
@@ -51,6 +50,8 @@ export default function PackageDetail({
   const gallerySmall = galleryItems.slice(2, 5);
   const itinerary = packageData.itinerary;
   const dayLabels = itinerary.map((item) => item.day_label);
+  const includedItems = packageData.included_items.filter((item) => item.kind === "included");
+  const excludedItems = packageData.included_items.filter((item) => item.kind === "excluded");
   const currentGalleryIndex = activeGalleryIndex ?? 0;
   const activeGalleryItem = activeGalleryIndex === null ? null : galleryItems[activeGalleryIndex];
 
@@ -211,28 +212,10 @@ export default function PackageDetail({
         {/* Things Included | Booking card */}
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-1 flex-col gap-6">
-            <h2 className={sectionHeading}>Things Included</h2>
-            <div className="flex gap-3">
-              <Icon icon="ix:support" className="size-6 shrink-0 text-foreground" />
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold tracking-[-0.04em] text-foreground">Support Team</p>
-                <ul className="list-disc pl-5 font-body-alt text-base leading-[1.9] tracking-[-0.02em] text-text-secondary">
-                  <li>2 Travel Guide who have fluency in English, French &amp; Chinese</li>
-                  <li>4 Potters</li>
-                </ul>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Icon icon="hugeicons:first-aid-kit" className="size-7 shrink-0 text-foreground" />
-              <div className="flex flex-col gap-2">
-                <p className="font-semibold tracking-[-0.04em] text-foreground">First Aid Services</p>
-                <ul className="list-disc pl-5 font-body-alt text-base leading-[1.9] tracking-[-0.02em] text-text-secondary">
-                  <li>Basic Medical Kit</li>
-                  <li>Trained Personnel</li>
-                  <li>Emergency Response Support</li>
-                  <li>Rescue Support</li>
-                </ul>
-              </div>
+            <h2 className={sectionHeading}>What’s included</h2>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#f4f8ef] p-5"><p className="font-semibold text-foreground">Included</p><ul className="mt-3 space-y-2 font-body-alt text-sm leading-relaxed text-text-secondary">{includedItems.map((item) => <li key={item.text}>{item.text}</li>)}</ul></div>
+              <div className="rounded-2xl border border-border p-5"><p className="font-semibold text-foreground">Not included</p><ul className="mt-3 space-y-2 font-body-alt text-sm leading-relaxed text-text-secondary">{excludedItems.map((item) => <li key={item.text}>{item.text}</li>)}</ul></div>
             </div>
           </div>
 
@@ -242,41 +225,19 @@ export default function PackageDetail({
               <span className="font-body-alt text-base tracking-[-0.03em] text-text-secondary">
                 Price per adult
               </span>
-              <span className="font-body-alt text-xl tracking-[-0.03em] text-foreground">{packageData ? `${packageData.currency} ${packageData.price}` : "$400"}</span>
+              <span className="font-body-alt text-xl tracking-[-0.03em] text-foreground">{packageData.currency} {packageData.price}</span>
             </div>
             <div className="flex flex-col gap-5">
-              <div className="flex gap-2">
-                <div className="flex flex-1 flex-col gap-1">
-                  <span className="py-1 font-body-alt text-base tracking-[-0.02em] text-text-secondary">Date</span>
-                  <div className="flex items-center justify-between gap-2 rounded-lg border border-border p-3">
-                    <span className="font-body-alt text-base tracking-[-0.04em] text-foreground">23 Apr - 1 May</span>
-                    <Icon icon="iconoir:calendar" className="size-4 shrink-0 text-foreground" />
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-col gap-1">
-                  <span className="py-1 font-body-alt text-base tracking-[-0.02em] text-text-secondary">Guests</span>
-                  <div className="flex items-center justify-between gap-2 rounded-lg border border-border p-3">
-                    <span className="font-body-alt text-base tracking-[-0.04em] text-foreground">2 adults</span>
-                    <Icon icon="ion:people-outline" className="size-4 shrink-0 text-foreground" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-[#2bbf0f] p-4">
-                <span className="flex items-center gap-2 text-foreground">
-                  <span className="font-body-alt text-sm tracking-[-0.04em]">Total</span>
-                  <span className="text-lg font-semibold tracking-[-0.04em]">{packageData ? `${packageData.currency} ${packageData.price}` : "$500"}</span>
-                </span>
-                <span className="font-body-alt text-sm tracking-[-0.04em] text-text-secondary">2 adults X $250</span>
-              </div>
+              <div className="rounded-xl bg-background p-4 font-body-alt text-sm leading-relaxed text-text-secondary">Choose your dates and group size with our travel team. This trip is limited to {packageData.people_count} guests.</div>
               <div className="flex flex-col gap-4">
                 <Link
                   href={reserveHref}
                   className="flex w-full items-center justify-center rounded-lg bg-foreground p-3 font-body-alt text-base font-medium tracking-[-0.03em] text-background transition-transform hover:scale-[1.02] active:scale-95"
                 >
-                  Reserve Now
+                  Ask about this trip
                 </Link>
                 <p className="text-center font-body-alt text-sm tracking-[-0.04em] text-text-secondary">
-                  *Only a deposit is due today. Pay the rest before departure.
+                  We’ll confirm availability and the final itinerary before you book.
                 </p>
               </div>
             </div>
@@ -308,20 +269,6 @@ export default function PackageDetail({
                 <p className="font-body-alt text-xl tracking-[-0.04em] text-foreground">
                   {itinerary[day]?.title}
                 </p>
-                <span className="shrink-0 rounded bg-background p-3 text-base font-semibold tracking-[-0.04em] text-foreground">
-                  8 hours
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5">
-                  <Icon icon="material-symbols-light:bed-outline-rounded" className="size-6 text-text-secondary" />
-                  <span className="font-body-alt text-base tracking-[-0.02em] text-text-secondary">Hotel</span>
-                </span>
-                <span className="size-1 rounded-full bg-text-secondary" />
-                <span className="flex items-center gap-1.5">
-                  <Icon icon="fluent:vehicle-bus-20-regular" className="size-6 text-text-secondary" />
-                  <span className="font-body-alt text-base tracking-[-0.02em] text-text-secondary">Jeep / Car / Bus</span>
-                </span>
               </div>
               <div className="flex flex-col gap-4">
                 <p className="font-body-alt text-lg tracking-[-0.04em] text-foreground">Description</p>
@@ -331,9 +278,7 @@ export default function PackageDetail({
               </div>
             </div>
           </div>
-          <div className="relative h-[300px] w-full overflow-hidden rounded-2xl lg:h-auto lg:w-[517px] lg:shrink-0">
-            <Image src="/images/pkgd-map.png" alt="Map" fill sizes="517px" className="object-cover" />
-          </div>
+          {itinerary[day]?.image && <div className="relative h-[300px] w-full overflow-hidden rounded-2xl lg:h-auto lg:w-[517px] lg:shrink-0"><Image src={itinerary[day].image?.src || itinerary[day].image?.url || ""} alt={itinerary[day].title} fill sizes="517px" className="object-cover" /></div>}
         </div>}
 
         {packageData && (
