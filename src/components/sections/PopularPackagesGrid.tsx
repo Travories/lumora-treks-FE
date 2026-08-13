@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import PackageCard from "@/components/ui/PackageCard";
 import CarouselNav from "@/components/ui/CarouselNav";
@@ -29,13 +28,20 @@ export default function PopularPackagesGrid({
   searchDate?: string;
   initialData?: PackageListResult;
 }) {
-  const router = useRouter();
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [page, setPage] = useState(1);
+  const [activeSearchLocation, setActiveSearchLocation] = useState(searchLocation);
+  const [activeSearchDate, setActiveSearchDate] = useState(searchDate);
+
+  useEffect(() => {
+    setActiveSearchLocation(searchLocation);
+    setActiveSearchDate(searchDate);
+    setPage(1);
+  }, [searchLocation, searchDate]);
 
   // Reset to page 1 the moment a new search arrives — render-phase, so the query
   // never runs with a stale page (no empty-state flash).
-  const searchKey = `${searchLocation || ""}|${searchDate || ""}`;
+  const searchKey = `${activeSearchLocation || ""}|${activeSearchDate || ""}`;
   const [prevSearchKey, setPrevSearchKey] = useState(searchKey);
   if (prevSearchKey !== searchKey) {
     setPrevSearchKey(searchKey);
@@ -43,9 +49,9 @@ export default function PopularPackagesGrid({
   }
 
   const { data, isLoading, isError, refetch } = usePackagesQuery({
-    category: searchLocation ? undefined : category,
-    location: searchLocation,
-    date: searchDate,
+    category: activeSearchLocation ? undefined : category,
+    location: activeSearchLocation,
+    date: activeSearchDate,
     page,
     pageSize: PAGE_SIZE,
   });
@@ -56,10 +62,17 @@ export default function PopularPackagesGrid({
   const loading = isLoading && !initialData;
   const errored = isError && !initialData;
 
+  const clearSearchMode = () => {
+    setActiveSearchLocation(undefined);
+    setActiveSearchDate(undefined);
+    setPage(1);
+    window.history.replaceState(null, "", "/packages");
+  };
+
   const handleCategory = (next: string) => {
     setCategory(next);
     setPage(1);
-    if (searchLocation) router.push("/packages"); // leave search mode
+    if (activeSearchLocation || activeSearchDate) clearSearchMode();
   };
 
   return (
@@ -82,36 +95,36 @@ export default function PopularPackagesGrid({
           defaultTab={category}
           onChange={handleCategory}
         />
-        {searchLocation && (
+        {activeSearchLocation && (
           <p className="font-body-alt text-base text-text-secondary">
             Showing results for{" "}
             <span className="font-semibold text-foreground">
-              “{searchLocation}”
+              “{activeSearchLocation}”
             </span>{" "}
-            {searchDate ? (
+            {activeSearchDate ? (
               <>
                 on{" "}
                 <span className="font-semibold text-foreground">
-                  {searchDate}
+                  {activeSearchDate}
                 </span>{" "}
               </>
             ) : null}
             <button
               type="button"
-              onClick={() => router.push("/packages")}
+              onClick={clearSearchMode}
               className="text-primary underline"
             >
               clear
             </button>
           </p>
         )}
-        {!searchLocation && searchDate && (
+        {!activeSearchLocation && activeSearchDate && (
           <p className="font-body-alt text-base text-text-secondary">
             Showing results for{" "}
-            <span className="font-semibold text-foreground">{searchDate}</span>{" "}
+            <span className="font-semibold text-foreground">{activeSearchDate}</span>{" "}
             <button
               type="button"
-              onClick={() => router.push("/packages")}
+              onClick={clearSearchMode}
               className="text-primary underline"
             >
               clear
@@ -145,8 +158,8 @@ export default function PopularPackagesGrid({
       ) : (
         <p className="py-16 text-center font-body-alt text-lg text-text-secondary">
           No packages found
-          {searchLocation ? ` for “${searchLocation}”` : ""}
-          {!searchLocation && searchDate ? ` for ${searchDate}` : ""}.
+          {activeSearchLocation ? ` for “${activeSearchLocation}”` : ""}
+          {!activeSearchLocation && activeSearchDate ? ` for ${activeSearchDate}` : ""}.
         </p>
       )}
 
