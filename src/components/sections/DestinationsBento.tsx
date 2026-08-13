@@ -24,6 +24,7 @@ export type BentoItem = {
   title: string;
   image?: CmsImage;
   href?: string;
+  price?: string;
 };
 
 const SLOT_PLACEMENT = [
@@ -42,21 +43,25 @@ const DEFAULT_HEADING: CmsHeadingGroup = {
 export default function DestinationsBento({
   heading = DEFAULT_HEADING,
   items,
+  resolved_items,
 }: {
   heading?: CmsHeadingGroup;
   items?: BentoItem[];
+  resolved_items?: BentoItem[];
 } = {}) {
   const { data: apiDestinations, isLoading } = useDestinationsQuery();
 
-  const cards: BentoItem[] = items && items.length > 0
-    ? items.slice(0, 5)
+  const cmsItems = resolved_items && resolved_items.length > 0 ? resolved_items : items;
+  const cards: BentoItem[] = cmsItems && cmsItems.length > 0
+    ? cmsItems.slice(0, 5)
     : (apiDestinations ?? []).slice(0, 5).map((d) => ({
         title: d.title,
         image: { url: d.image },
         href: d.href || `/destinations/${d.slug || d.id}`,
+        price: d.price,
       }));
 
-  const showSkeleton = isLoading && !items && cards.length === 0;
+  const showSkeleton = isLoading && !cmsItems && cards.length === 0;
 
   return (
     <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-10">
@@ -90,9 +95,10 @@ export default function DestinationsBento({
                 className={`h-[275px] lg:h-auto ${SLOT_PLACEMENT[i] ?? ""}`}
               >
                 <DestinationCard
-                  image={card.image?.url || "/images/destination-card-default.png"}
+                  image={card.image?.url}
                   title={card.title}
                   href={card.href}
+                  price={card.price}
                 />
               </motion.div>
             ))}

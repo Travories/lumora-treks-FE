@@ -10,6 +10,8 @@ type CmsDestination = {
   image?: CmsImage;
   region: string;
   href?: string | null;
+  starting_price?: number | null;
+  currency?: string | null;
 };
 
 function adaptCmsDestination(d: CmsDestination): DestinationCardData {
@@ -19,9 +21,7 @@ function adaptCmsDestination(d: CmsDestination): DestinationCardData {
     title: d.title,
     image: d.image?.src || d.image?.url || "/images/destination-card-default.png",
     href: d.href || `/destinations/${d.slug}`,
-    // No real price on Destination yet (only Package has one) — leave unset
-    // so DestinationCard's own "$400" placeholder default applies, rather
-    // than fabricating a number.
+    price: d.starting_price == null ? undefined : `${d.currency || "USD"} ${d.starting_price}`,
   };
 }
 

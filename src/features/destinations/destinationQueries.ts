@@ -14,6 +14,8 @@ type CmsDestination = {
   subtitle?: string;
   image?: CmsImage;
   href?: string;
+  starting_price?: number | null;
+  currency?: string | null;
 };
 
 export async function fetchDestinations(
@@ -39,6 +41,7 @@ export async function fetchDestinations(
         subtitle: item.subtitle ?? "",
         image: item.image?.src ?? item.image?.url ?? "/images/destination-card-default.png",
         href: item.href ?? `/destinations/${item.slug}`,
+        price: item.starting_price == null ? undefined : `${item.currency ?? "USD"} ${item.starting_price}`,
       }));
     }
     return [];

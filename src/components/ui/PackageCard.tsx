@@ -47,10 +47,7 @@ export default function PackageCard({
           <span className="rounded bg-background px-2.5 py-2 text-sm font-semibold tracking-[-0.04em] text-foreground">
             {duration}
           </span>
-          <span className="flex items-center gap-1 rounded bg-background px-2.5 py-2 text-sm font-medium tracking-[-0.04em] text-foreground">
-            <Icon icon="ic:round-star" className="size-[18px] text-foreground" />
-            {rating}
-          </span>
+          {Number(rating) > 0 ? <span className="flex items-center gap-1 rounded bg-background px-2.5 py-2 text-sm font-medium tracking-[-0.04em] text-foreground"><Icon icon="ic:round-star" className="size-[18px] text-foreground" />{rating}</span> : <span className="rounded bg-background px-2.5 py-2 text-sm font-medium tracking-[-0.04em] text-text-secondary">New trip</span>}
         </div>
       </div>
     </div>

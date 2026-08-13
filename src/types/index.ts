@@ -36,7 +36,7 @@ export type DestinationCardData = {
   slug?: string;
   title: string;
   image: string;
-  price?: string; // "starting from $X" amount, e.g. "400"
+  price?: string; // formatted real starting price, e.g. "USD 400"
   href?: string;
 };
 

@@ -94,7 +94,7 @@ export default function PackageDetail({
         {/* Header */}
         <div className="flex flex-col gap-3">
           <nav className="flex flex-wrap items-center gap-2 font-body-alt text-base tracking-[-0.02em] text-text-secondary">
-            <Link href="/destinations">Destinations</Link>
+            <Link href="/packages">Packages</Link>
             <Icon icon="iconoir:nav-arrow-right" className="size-4" />
             <span className="font-medium text-[#2bbf0f] underline">
               {title}
@@ -109,12 +109,7 @@ export default function PackageDetail({
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-medium text-text-secondary">{rating.toFixed(1)}</span>
-            <StarRating rating={rating} starSize={20} />
-            <span className="size-1 rounded-full bg-text-secondary" />
-            <a href="#reviews" className="text-lg text-text-secondary underline underline-offset-4">
-              ({reviewCount} Reviews)
-            </a>
+            {reviewCount > 0 ? <><span className="font-medium text-text-secondary">{rating.toFixed(1)}</span><StarRating rating={rating} starSize={20} /><span className="size-1 rounded-full bg-text-secondary" /><a href="#reviews" className="text-lg text-text-secondary underline underline-offset-4">({reviewCount} Reviews)</a></> : <a href="#reviews" className="font-body-alt text-base font-semibold text-primary-active underline underline-offset-4">Be the first to review</a>}
           </div>
         </div>
 
@@ -153,7 +148,13 @@ export default function PackageDetail({
           </div>
 
           {/* Gallery */}
-          <div className="flex flex-1 flex-col gap-2">
+          {galleryItems.length > 0 && <div className="flex flex-1 flex-col gap-2">
+            {galleryItems.length === 1 ? (
+              <button type="button" onClick={() => setActiveGalleryIndex(0)} className="group relative h-[360px] overflow-hidden rounded-2xl text-left" aria-label="Open package photo">
+                <Image src={galleryItems[0].src} alt={galleryItems[0].caption} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover transition duration-500 group-hover:scale-105" priority />
+                <span className="absolute bottom-4 left-4 rounded-full bg-black/55 px-3 py-1.5 font-body-alt text-xs font-semibold text-white">View photo</span>
+              </button>
+            ) : <>
             <div className="grid h-[335px] grid-cols-2 gap-2">
               {galleryLarge.map((item, i) => (
                 <button
@@ -206,7 +207,9 @@ export default function PackageDetail({
                 );
               })}
             </div>
+            </>}
           </div>
+          }
         </div>
 
         {/* Things Included | Booking card */}
@@ -214,8 +217,8 @@ export default function PackageDetail({
           <div className="flex flex-1 flex-col gap-6">
             <h2 className={sectionHeading}>What’s included</h2>
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="rounded-2xl bg-[#f4f8ef] p-5"><p className="font-semibold text-foreground">Included</p><ul className="mt-3 space-y-2 font-body-alt text-sm leading-relaxed text-text-secondary">{includedItems.map((item) => <li key={item.text}>{item.text}</li>)}</ul></div>
-              <div className="rounded-2xl border border-border p-5"><p className="font-semibold text-foreground">Not included</p><ul className="mt-3 space-y-2 font-body-alt text-sm leading-relaxed text-text-secondary">{excludedItems.map((item) => <li key={item.text}>{item.text}</li>)}</ul></div>
+              <div className="rounded-2xl bg-[#f4f8ef] p-5"><div className="flex items-center gap-2"><span className="flex size-6 items-center justify-center rounded-full bg-primary-active text-white"><Icon icon="iconoir:check" className="size-4" /></span><p className="font-semibold text-foreground">Included</p></div><ul className="mt-4 space-y-3 font-body-alt text-sm leading-relaxed text-text-secondary">{includedItems.map((item) => <li key={item.text} className="flex gap-2.5"><Icon icon="iconoir:check-circle-solid" className="mt-0.5 size-4 shrink-0 text-primary-active" />{item.text}</li>)}</ul></div>
+              <div className="rounded-2xl border border-border p-5"><div className="flex items-center gap-2"><span className="flex size-6 items-center justify-center rounded-full bg-text-secondary text-white"><Icon icon="iconoir:xmark" className="size-4" /></span><p className="font-semibold text-foreground">Not included</p></div><ul className="mt-4 space-y-3 font-body-alt text-sm leading-relaxed text-text-secondary">{excludedItems.map((item) => <li key={item.text} className="flex gap-2.5"><Icon icon="iconoir:cancel" className="mt-0.5 size-4 shrink-0 text-text-muted" />{item.text}</li>)}</ul></div>
             </div>
           </div>
 

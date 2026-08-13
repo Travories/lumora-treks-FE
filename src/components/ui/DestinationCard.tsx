@@ -4,10 +4,11 @@ import { Icon } from "@iconify/react";
 import clsx from "clsx";
 
 /** Destination card — image with a bottom gradient, title + up-right arrow, and
- * a "Starting from $X" line. Figma: Destinations Section (34:1417). Optional
+ * a truthful starting price when one is available. Figma: Destinations Section
+ * (34:1417). Optional
  * `href` makes it a link to the destination detail page. */
 export type DestinationCardProps = {
-  image: string;
+  image?: string;
   title: string;
   price?: string;
   className?: string;
@@ -17,7 +18,7 @@ export type DestinationCardProps = {
 export default function DestinationCard({
   image,
   title,
-  price = "400",
+  price,
   className,
   href,
 }: DestinationCardProps) {
@@ -28,13 +29,13 @@ export default function DestinationCard({
         className
       )}
     >
-      <Image
+      {image && <Image
         src={image}
         alt={title}
         fill
         sizes="(max-width: 1024px) 100vw, 420px"
         className="object-cover"
-      />
+      />}
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
       <div className="relative flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
@@ -45,9 +46,7 @@ export default function DestinationCard({
             <Icon icon="iconoir:arrow-up-right" className="size-4 text-foreground" />
           </span>
         </div>
-        <p className="text-base tracking-tight text-[#ebffe8]">
-          Starting from <span className="font-semibold">${price}</span>
-        </p>
+        {price ? <p className="text-base tracking-tight text-[#ebffe8]">Starting from <span className="font-semibold">{price}</span></p> : <p className="text-base tracking-tight text-[#ebffe8]">Explore this region</p>}
       </div>
     </div>
   );
