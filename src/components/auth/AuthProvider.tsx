@@ -112,7 +112,15 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify(input),
     });
 
-    if (!response.ok) throw new Error(await responseMessage(response));
+    if (!response.ok) {
+      const message = await responseMessage(response);
+      if (response.status === 401 || response.status === 403) {
+        setUser(null);
+        setDismissedUserId(null);
+        setStatus("unauthenticated");
+      }
+      throw new Error(message);
+    }
     const data = (await response.json()) as AuthUserResponse;
     setUser(data.user);
     setDismissedUserId(null);

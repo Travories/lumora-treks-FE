@@ -8,8 +8,15 @@ export const metadata: Metadata = {
   description: "Sign in with Google and create your Lumora traveler profile.",
 };
 
-function safeCallbackUrl(value?: string) {
-  if (!value) return "/";
+function safeCallbackUrl(value: string | string[] | undefined) {
+  if (
+    typeof value !== "string" ||
+    !value ||
+    value.includes("\\") ||
+    /[\u0000-\u001F\u007F]/.test(value)
+  ) {
+    return "/";
+  }
 
   try {
     const base = new URL("https://lumora.local");
@@ -25,7 +32,7 @@ function safeCallbackUrl(value?: string) {
 export default async function JoinPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
 }) {
   const { callbackUrl } = await searchParams;
 
