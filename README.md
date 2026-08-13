@@ -16,7 +16,13 @@ The local environment should point to a local or staging CMS, not production:
 
 ```dotenv
 NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 ```
+
+Create a Google Web OAuth client and allow the frontend origins you use (for
+example `http://localhost:3000` and the production site). Use the same client
+ID as `GOOGLE_CLIENT_ID` in the backend. Account tokens are kept in an
+HTTP-only same-origin cookie by the frontend auth bridge.
 
 ## Verification
 
@@ -35,6 +41,7 @@ npm run build
 - `/packages` and `/packages/[id]` — catalog listing and detail
 - `/destinations` and `/destinations/[slug]` — destination listing and detail
 - `/enquiry` — lead enquiry form
+- `/join` — Google sign-in and traveler onboarding entry point
 - `/checkout` — clearly labelled payment simulation; no card data is collected and no money is charged
 - `/cms/[slug]` — CMS preview/demo route
 

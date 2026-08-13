@@ -51,6 +51,15 @@ Reuse these before building anything new. Update this table whenever a new reusa
 | `Navbar` | 69:873 | Floating nav (absolute over hero); active route via `usePathname` (green dot); mobile menu via `useUIStore`. Reused on every page. |
 | `Footer` | 73:464 | Forest bg + logo/tagline/socials + links + "Lumora Treks" watermark that rises on scroll. Reused on every page. |
 
+### Account (`src/components/auth/`)
+| Component | Purpose / notes |
+|---|---|
+| `AuthProvider` | Loads the HTTP-only-cookie session, exposes the traveler profile, Google sign-in, onboarding save, and logout. Mounted once in the root layout. |
+| `AuthNavAction` | Navbar-owned account CTA: "Join Lumora" when signed out; avatar/profile menu when signed in. Desktop and mobile variants. |
+| `GoogleSignInButton` | Official Google Identity Services button; exchanges the returned ID token through the same-origin auth bridge. |
+| `OnboardingPrompt` | Resumable traveler profile dialog (name, travel style, interests). Closing never marks onboarding complete, so it returns on the next visit. |
+| `JoinExperience` | Branded `/join` sign-in surface with a clear anonymous-enquiry path. |
+
 ### UI primitives (`src/components/ui/`)
 | Component | Purpose | Key props |
 |---|---|---|
@@ -84,6 +93,7 @@ Reuse these before building anything new. Update this table whenever a new reusa
 - **Checkout / payment** `src/app/checkout/page.tsx` (`/checkout`) — BUILT (Figma 118:4743). Navbar(in-flow) → Checkout → Footer. Reached from a package's Reserve Now; presentational form. Route could nest under `/packages/[id]/checkout` later.
 - **Payment success** `src/app/checkout/success/page.tsx` (`/checkout/success`) — BUILT (Figma 118:4814). Navbar → PaymentSuccess → Footer. Reuses `checkout-thumb.png` (no new image).
 - **Contact** `src/app/contact/page.tsx` (`/contact`) — BUILT (Figma 75:144). Navbar(in-flow) → ContactHero → ContactForm → WhyChooseUs(reuse) → AuthenticExperiences(reuse, `reversed`) → FAQSection(reuse) → Footer. New image `public/images/contact-hero.png`.
+- **Join** `src/app/join/page.tsx` (`/join`) — Google sign-in entry point. Successful sign-in resumes the requested route and globally opens onboarding until the persisted traveler profile is complete. Enquiry remains public.
 
 ## Known Figma copy placeholders / typos (kept faithful unless told otherwise)
 Lorem-ipsum + `$400`/`4 Days`/`4.9` on cards · "Cured Destinations" (likely "Curated") · "Journeyfinder" (should be Lumora) · "with with" double word (Experience heading).

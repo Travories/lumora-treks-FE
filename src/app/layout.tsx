@@ -8,6 +8,8 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 import { siteSettingsQueryOptions } from "@/features/site/siteQueries";
+import AuthProvider from "@/components/auth/AuthProvider";
+import OnboardingPrompt from "@/components/auth/OnboardingPrompt";
 
 export const metadata: Metadata = {
   title: "Lumora Treks | Travel Beyond Destinations",
@@ -27,7 +29,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <QueryProvider>
           <HydrationBoundary state={dehydrate(queryClient)}>
-            <StoreProvider>{children}</StoreProvider>
+            <StoreProvider>
+              <AuthProvider>
+                {children}
+                <OnboardingPrompt />
+              </AuthProvider>
+            </StoreProvider>
           </HydrationBoundary>
         </QueryProvider>
       </body>

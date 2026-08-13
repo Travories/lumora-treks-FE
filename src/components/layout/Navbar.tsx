@@ -8,17 +8,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { useUIStore } from "@/store/useUIStore";
 import { useSiteSettingsQuery } from "@/features/site/siteQueries";
+import AuthNavAction from "@/components/auth/AuthNavAction";
 
 
 /** Navbar — Figma node 69:873.
  *
- * Nav links, "Reserve Now" href/label and the brand name come from
+ * Nav links and the brand name come from
  * `/api/v2/site/` (`NavigationSettings`/`BrandSettings`, backend
  * `apps/navigation/models.py`) when available; falls back to the original
  * Figma copy while loading, on error, or once the query resolves empty (a
  * fresh CMS with no nav items configured yet). Logo mark stays the static
  * `/logo.svg` asset either way (see Hero's mountain-cutout note — swapping
- * to a CMS-uploaded raster logo needs its own treatment). */
+ * to a CMS-uploaded raster logo needs its own treatment). The final navbar
+ * action is account-owned rather than CMS-owned: Join Lumora when signed out,
+ * and the traveler menu when signed in. */
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -38,9 +41,6 @@ export default function Navbar() {
         { label: "Destinations", href: "/destinations" },
         { label: "Contact Us", href: "/contact" },
       ];
-  const ctaLink = site?.navigation.cta_button[0]?.value;
-  const cta = { label: ctaLink?.label || "Reserve Now", href: ctaLink?.href || "/enquiry" };
-
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
@@ -90,13 +90,8 @@ export default function Navbar() {
         </nav>
 
 
-        {/* Reserve (desktop) */}
-        <Link
-          href={cta.href}
-          className="hidden shrink-0 items-center justify-center rounded-full bg-foreground px-5 py-2.5 font-body-alt text-base font-semibold tracking-[-0.04em] text-background transition-transform hover:scale-[1.03] active:scale-95 lg:inline-flex"
-        >
-          {cta.label}
-        </Link>
+        {/* Traveler account action (desktop) */}
+        <AuthNavAction />
 
         {/* Mobile toggle */}
         <button
@@ -143,13 +138,7 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            <Link
-              href={cta.href}
-              onClick={closeMobileNav}
-              className="mt-2 inline-flex items-center justify-center rounded-[34px] bg-foreground px-6 py-3.5 font-body-alt text-lg font-semibold text-background"
-            >
-              {cta.label}
-            </Link>
+            <AuthNavAction mobile onAction={closeMobileNav} />
           </motion.nav>
         )}
       </AnimatePresence>
