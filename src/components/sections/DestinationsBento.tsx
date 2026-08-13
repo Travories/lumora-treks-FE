@@ -53,7 +53,7 @@ export default function DestinationsBento({
     : (apiDestinations ?? []).slice(0, 5).map((d) => ({
         title: d.title,
         image: { url: d.image },
-        href: `/destinations/${d.id}`,
+        href: d.href || `/destinations/${d.slug || d.id}`,
       }));
 
   const showSkeleton = isLoading && !items && cards.length === 0;
