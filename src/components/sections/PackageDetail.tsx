@@ -12,11 +12,6 @@ import type { CmsPackageDetail } from "@/lib/blocks";
  * destination detail: overview + key facts, gallery, things included, booking
  * card, itinerary (+ map), reviews. Content dummy; the seam for Travories. */
 
-const GALLERY_LARGE = ["/images/kds-1.png", "/images/kds-2.png"];
-const GALLERY_SMALL = ["/images/kds-3.png", "/images/kds-4.png", "/images/kds-5.png"];
-
-const DAYS = ["Day 1", "Day 2", "Day 3"];
-
 const sectionHeading =
   "text-2xl font-semibold tracking-[-0.04em] text-foreground";
 
@@ -29,17 +24,17 @@ export default function PackageDetail({
 } = {}) {
   const [day, setDay] = useState(0);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
-  const title = packageData?.title || "Kathmandu Durbar Square";
-  const rating = packageData?.rating ?? 4;
-  const reviewCount = packageData?.review_count ?? 13;
-  const overview = packageData?.summary || packageData?.description ||
-    "Lumbini, located in Nepal, holds profound significance as a UNESCO World Heritage Site.";
+  if (!packageData) return null;
+  const title = packageData.title;
+  const rating = packageData.rating;
+  const reviewCount = packageData.review_count;
+  const overview = packageData.description || packageData.summary;
   const keyFacts = [
-    { icon: "bi:suitcase", label: "Trip Style", value: packageData?.category || "Sightseeing" },
-    { icon: "lets-icons:speed", label: "Difficulty", value: packageData?.difficulty || "Easy" },
-    { icon: "lucide:calendar", label: "Number of days", value: packageData?.duration || "4 Days & 3 Nights" },
+    { icon: "bi:suitcase", label: "Trip Style", value: packageData.category },
+    { icon: "lets-icons:speed", label: "Difficulty", value: packageData.difficulty },
+    { icon: "lucide:calendar", label: "Number of days", value: packageData.duration },
   ];
-  const galleryItems = packageData?.gallery?.length
+  const galleryItems = packageData.gallery.length
     ? packageData.gallery
         .map((item, index) => {
           const src = item.image?.src || item.image?.url;
@@ -51,14 +46,11 @@ export default function PackageDetail({
           };
         })
         .filter(Boolean) as Array<{ src: string; caption: string }>
-    : [...GALLERY_LARGE, ...GALLERY_SMALL].map((src, index) => ({
-        src,
-        caption: `${title} photo ${index + 1}`,
-      }));
+    : [];
   const galleryLarge = galleryItems.slice(0, 2);
   const gallerySmall = galleryItems.slice(2, 5);
-  const itinerary = packageData?.itinerary?.length ? packageData.itinerary : null;
-  const dayLabels = itinerary?.map((item) => item.day_label) || DAYS;
+  const itinerary = packageData.itinerary;
+  const dayLabels = itinerary.map((item) => item.day_label);
   const currentGalleryIndex = activeGalleryIndex ?? 0;
   const activeGalleryItem = activeGalleryIndex === null ? null : galleryItems[activeGalleryIndex];
 
@@ -131,9 +123,6 @@ export default function PackageDetail({
             <div className="flex flex-col gap-5 border-b border-border pb-6">
               <h2 className={sectionHeading}>Overview</h2>
               <p className="font-body-alt text-lg leading-[1.6] tracking-[-0.02em] text-text-secondary">{overview}</p>
-              <button type="button" className="w-fit font-semibold tracking-[-0.03em] text-foreground underline">
-                See More
-              </button>
             </div>
             <div className="flex flex-col gap-5">
               <h2 className={sectionHeading}>Key Facts</h2>
@@ -245,9 +234,6 @@ export default function PackageDetail({
                 </ul>
               </div>
             </div>
-            <button type="button" className="w-fit font-semibold tracking-[-0.03em] text-foreground underline">
-              See More
-            </button>
           </div>
 
           {/* Booking card */}
@@ -298,7 +284,7 @@ export default function PackageDetail({
         </div>
 
         {/* Itinerary + Map */}
-        <div className="flex flex-col gap-8 border-y border-border py-8 lg:flex-row lg:items-stretch lg:gap-8">
+        {itinerary.length > 0 && <div className="flex flex-col gap-8 border-y border-border py-8 lg:flex-row lg:items-stretch lg:gap-8">
           <div className="flex flex-1 flex-col gap-6">
             <h2 className={sectionHeading}>Itinerary</h2>
             <div className="flex gap-2">
@@ -320,7 +306,7 @@ export default function PackageDetail({
             <div className="flex flex-col gap-5 rounded-lg border border-border p-6">
               <div className="flex items-start justify-between gap-4">
                 <p className="font-body-alt text-xl tracking-[-0.04em] text-foreground">
-                  {itinerary?.[day]?.title || "Tribhuvan N. Airport - Swayobhunath Temple at Kathmandu"}
+                  {itinerary[day]?.title}
                 </p>
                 <span className="shrink-0 rounded bg-background p-3 text-base font-semibold tracking-[-0.04em] text-foreground">
                   8 hours
@@ -340,7 +326,7 @@ export default function PackageDetail({
               <div className="flex flex-col gap-4">
                 <p className="font-body-alt text-lg tracking-[-0.04em] text-foreground">Description</p>
                 <p className="font-body-alt text-base leading-[1.6] tracking-[-0.02em] text-text-secondary">
-                  {itinerary?.[day]?.description || "Join our expert local guide for unforgettable sightseeing and trekking adventures across Nepal&apos;s majestic mountains, ancient temples, and hidden valleys."}
+                  {itinerary[day]?.description}
                 </p>
               </div>
             </div>
@@ -348,7 +334,7 @@ export default function PackageDetail({
           <div className="relative h-[300px] w-full overflow-hidden rounded-2xl lg:h-auto lg:w-[517px] lg:shrink-0">
             <Image src="/images/pkgd-map.png" alt="Map" fill sizes="517px" className="object-cover" />
           </div>
-        </div>
+        </div>}
 
         {packageData && (
           <PackageReviews

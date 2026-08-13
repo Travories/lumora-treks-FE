@@ -54,6 +54,7 @@ export type CmsListResponse<T> = {
 export type CmsPackageDetail = {
   id: number | string;
   slug: string;
+  public_code: string;
   title: string;
   category: string;
   summary: string;
@@ -68,6 +69,7 @@ export type CmsPackageDetail = {
   discount_price?: number | null;
   currency: string;
   difficulty: string;
+  href?: string;
   booking_url?: string;
   destination?: CmsDestinationDetail | null;
   highlights: Array<{ text: string; icon?: string }>;

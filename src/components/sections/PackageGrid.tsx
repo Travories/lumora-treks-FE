@@ -71,7 +71,7 @@ export default function PackageGrid({
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, ease: "easeOut", delay: (i % 3) * 0.1 }}
             >
-              <PackageCard {...pkg} href={`/packages/${pkg.id}`} />
+              <PackageCard {...pkg} href={pkg.href} />
             </motion.div>
           ))}
         </div>

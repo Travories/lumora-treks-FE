@@ -69,7 +69,7 @@ export default function CulturalDayTours({
                   key={tour.id}
                   className="min-w-0 flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)]"
                 >
-                  <PackageCard {...tour} href={`/packages/${tour.id}`} />
+                  <PackageCard {...tour} href={tour.href} />
                 </div>
               ))}
             </div>

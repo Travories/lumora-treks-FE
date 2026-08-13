@@ -31,6 +31,7 @@ export function adaptCmsPackage(pkg: CmsPackage): PackageCardData {
     duration: pkg.duration || "",
     rating: pkg.rating != null ? pkg.rating.toFixed(1) : "",
     category: pkg.category,
+    href: pkg.href,
   };
 }
 

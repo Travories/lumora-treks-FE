@@ -90,7 +90,7 @@ export default function PopularPackages({
                   key={pkg.id}
                   className="min-w-0 flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)]"
                 >
-                  <PackageCard {...pkg} href={`/packages/${pkg.id}`} />
+                  <PackageCard {...pkg} href={pkg.href} />
                 </div>
               ))}
             </div>

@@ -18,6 +18,7 @@ export type PackageCardData = {
   duration: string; // e.g. "4 Days"
   rating: string; // e.g. "4.9"
   category?: string; // e.g. "Trekking" (for FilterTabs)
+  href?: string;
 };
 
 /** Paginated package list response. */

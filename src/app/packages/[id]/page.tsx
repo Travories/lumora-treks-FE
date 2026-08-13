@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import PackageDetail from "@/components/sections/PackageDetail";
-import CulturalDayTours from "@/components/sections/CulturalDayTours";
 import { getPackageBySlug } from "@/lib/catalog";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: `${packageData.title} | Lumora Treks`,
     description: packageData.summary || undefined,
-    alternates: { canonical: `/packages/${packageData.slug}` },
+    alternates: { canonical: `/packages/${packageData.slug}/${packageData.public_code}` },
     openGraph: {
       title: packageData.title,
       description: packageData.summary || undefined,
@@ -42,18 +38,5 @@ export default async function PackageDetailPage({
   const { id } = await params;
   const packageData = await loadPackage(id);
   if (!packageData) notFound();
-
-  return (
-    <>
-      <main className="flex-1">
-        <Navbar />
-        <PackageDetail
-          packageData={packageData}
-          reserveHref={`/enquiry?package=${encodeURIComponent(packageData.slug)}`}
-        />
-        <CulturalDayTours />
-      </main>
-      <Footer />
-    </>
-  );
+  redirect(`/packages/${packageData.slug}/${packageData.public_code}`);
 }
