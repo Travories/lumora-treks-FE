@@ -50,15 +50,8 @@ export default function JoinExperience({ callbackUrl }: { callbackUrl: string })
           </div>
 
           <p className="mt-5 max-w-sm font-body-alt text-xs leading-relaxed text-text-muted">
-            No new password to remember. By continuing, you agree to our{" "}
-            <Link href="/terms" className="font-semibold text-foreground underline underline-offset-2">
-              terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="font-semibold text-foreground underline underline-offset-2">
-              privacy policy
-            </Link>
-            .
+            No new password to remember. Lumora only receives the basic profile details Google
+            shares for sign-in.
           </p>
 
           <div className="mt-10 border-t border-border pt-5 font-body-alt text-sm text-text-secondary">

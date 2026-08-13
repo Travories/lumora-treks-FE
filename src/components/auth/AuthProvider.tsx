@@ -34,10 +34,26 @@ async function responseMessage(response: Response) {
   const data: unknown = await response.json().catch(() => null);
   if (data && typeof data === "object") {
     if ("detail" in data && typeof data.detail === "string") return data.detail;
-    if ("errors" in data && data.errors && typeof data.errors === "object") {
-      const first = Object.values(data.errors as Record<string, unknown>)[0];
-      if (typeof first === "string") return first;
-      if (Array.isArray(first) && typeof first[0] === "string") return first[0];
+
+    const findMessage = (value: unknown): string | null => {
+      if (typeof value === "string") return value;
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          const message = findMessage(item);
+          if (message) return message;
+        }
+      } else if (value && typeof value === "object") {
+        for (const item of Object.values(value as Record<string, unknown>)) {
+          const message = findMessage(item);
+          if (message) return message;
+        }
+      }
+      return null;
+    };
+
+    const message = findMessage(data);
+    if (message) {
+      return message;
     }
   }
   return "Something went wrong. Please try again.";
@@ -153,4 +169,3 @@ export function useAuth() {
   if (!context) throw new Error("useAuth must be used inside AuthProvider.");
   return context;
 }
-

@@ -22,7 +22,9 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.co
 Create a Google Web OAuth client and allow the frontend origins you use (for
 example `http://localhost:3000` and the production site). Use the same client
 ID as `GOOGLE_CLIENT_ID` in the backend. Account tokens are kept in an
-HTTP-only same-origin cookie by the frontend auth bridge.
+HTTP-only same-origin cookie by the frontend auth bridge. The token belongs to
+Lumora rather than Google; Google is one linked identity provider, so future
+email/password or additional OAuth methods can reuse the same session contract.
 
 ## Verification
 

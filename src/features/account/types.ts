@@ -1,6 +1,7 @@
 export type TravelerProfile = {
   id: number;
   email: string;
+  role: "USER" | "ADMIN";
   full_name: string;
   avatar_url: string;
   interests: string[];
@@ -17,4 +18,3 @@ export type OnboardingInput = {
 export type AuthUserResponse = {
   user: TravelerProfile;
 };
-

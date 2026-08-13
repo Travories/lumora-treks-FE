@@ -142,6 +142,7 @@ function OnboardingForm({ user }: { user: TravelerProfile }) {
             onChange={(event) => setFullName(event.target.value)}
             autoComplete="name"
             autoFocus
+            maxLength={150}
             required
             placeholder="Your full name"
             className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3.5 font-body-alt text-base text-foreground outline-none transition-shadow placeholder:text-text-muted focus:border-foreground focus:ring-2 focus:ring-primary-accent/50"
