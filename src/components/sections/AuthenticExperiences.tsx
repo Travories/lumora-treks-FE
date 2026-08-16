@@ -52,27 +52,29 @@ export default function AuthenticExperiences({
           className="relative aspect-square w-full max-w-[523px] shrink-0"
         >
           <Image
-            // src={imageSrc}
-            src="/images/seasonal-1.png"
+            src={imageSrc}
+            // src="/images/seasonal-1.png"
             alt={imageAlt}
             fill
             sizes="(max-width: 1024px) 100vw, 523px"
-            className="object-contain"
+            className="object-cover"
           />
           {/* <div
             className="absolute -left-12 bottom-0 w-64 h-64 bg-white"
             style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}
           /> */}
           {/* <div
-            className="bg-white h-18 w-42 -start-[100px] -rotate-[20deg] absolute bottom-[30%] rounded-4xl"></div>
-          <div className="bg-white h-18 w-42 -start-[100px] -rotate-[20deg] absolute bottom-[30%] rounded-4xl"></div> */}
+            className="bg-white h-18 w-64 -start-[160px] -rotate-[20deg] absolute bottom-[30%] rounded-4xl">
+          </div> */}
+          {/* <div className="bg-white h-18 w-42 -start-[100px] -rotate-[20deg] absolute bottom-[30%] rounded-4xl"></div> */}
 
+          {/*           
           <svg
             className="absolute top-[97px] right-0 w-1/3 h-auto fill-white pointer-events-none"
             viewBox="0 0 300 300"
           >
             <path d="M100,0 C180,20 220,120 180,180 C140,240 250,280 300,300 L300,0 Z" />
-          </svg>
+          </svg>  */}
         </motion.div>
 
         <motion.div
