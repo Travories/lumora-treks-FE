@@ -79,13 +79,14 @@ export default function Footer() {
       links: (c.value.links || []).filter((l) => l.label && l.href),
     }))
     .filter((c) => c.links.length);
-  const columns = cmsColumns?.length
+  const configuredColumns = cmsColumns?.length
     ? cmsColumns
     : [
         {
           heading: "Company",
           links: [
             { label: "Contact Us", href: "/contact" },
+            { label: "FAQs", href: "/contact#faq" },
             { label: "Privacy Policy", href: "/privacy" },
             { label: "Terms & Conditions", href: "/terms" },
             {
@@ -96,6 +97,23 @@ export default function Footer() {
           ] as CmsLink[],
         },
       ];
+  const hasFaqLink = configuredColumns.some((column) =>
+    column.links.some((link) => link.href === "/contact#faq"),
+  );
+  const columns = hasFaqLink
+    ? configuredColumns
+    : configuredColumns.map((column, index) =>
+        index === 0
+          ? {
+              ...column,
+              links: [
+                ...column.links.slice(0, 1),
+                { label: "FAQs", href: "/contact#faq" },
+                ...column.links.slice(1),
+              ],
+            }
+          : column,
+      );
 
   const copyright =
     site?.footer?.copyright_text ||
